@@ -48,8 +48,6 @@ export const sampleChannels: Channel[] = [
     language: 'ARABIC',
     description: 'SPORT stream',
   }
-
-  ,
   
 ];
 
