@@ -47,7 +47,7 @@ export const sampleChannels: Channel[] = [
     country: 'palestine',
     language: 'ARABIC',
     description: 'news stream',
-  }
+  },
   {
     id: '5',
     name: 'Sky News Arabia',
