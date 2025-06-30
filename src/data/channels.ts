@@ -17,7 +17,7 @@ export const sampleChannels: Channel[] = [
     logo: 'https://www.google.com/url?sa=i&url=https%3A%2F%2Fwww.youtube.com%2Fchannel%2FUCCv1Pd24oPErw5S7zJWltnQ%2Fabout&psig=AOvVaw3iyBli2ONm8kFiBstmfM7u&ust=1751387270117000&source=images&cd=vfe&opi=89978449&ved=0CBEQjRxqFwoTCODql5_LmY4DFQAAAAAdAAAAABAE',
     url: 'https://live-hls-apps-ajm-fa.getaj.net/AJM/index.m3u8',
     category: 'Entertainment',
-    country: 'BEIN',
+    country: 'arab',
     language: 'ARABICh',
     description: 'News channels'
   },
