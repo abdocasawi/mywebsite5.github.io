@@ -22,6 +22,16 @@ export const sampleChannels: Channel[] = [
     description: 'News channels'
   },
   {
+    id: '2',
+    name: 'Be in Sport 1 HD',
+    logo: 'http://bdd78.4rouwanda-shop.store/live/918454578001/index.m3u8',
+    url: 'https://live-hls-apps-ajm-fa.getaj.net/AJM/index.m3u8',
+    category: 'SPORT',
+    country: 'QATAR',
+    language: 'ARABICh',
+    description: 'SPORT CHANNELS'
+  },
+  {
     id: '3',
     name: 'Arryadia',
     url: 'https://cdn.live.easybroadcast.io/abr_corp/73_arryadia_k2tgcj0/corp/73_arryadia_k2tgcj0_480p/chunks_dvr.m3u8',
