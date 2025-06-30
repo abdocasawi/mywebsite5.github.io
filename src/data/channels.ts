@@ -65,6 +65,15 @@ export const sampleChannels: Channel[] = [
     country: 'MOROCCO',
     language: 'ARABIC',
     description: 'news stream',
+  },
+  {
+    id: '10',
+    name: 'AFLAM ',
+    url: 'https://fl1002.bozztv.com/ga-aflamtv7/index.m3u8',
+    category: 'LIVE TV',
+    country: 'MOROCCO',
+    language: 'ARABIC',
+    description: 'news stream',
   }
 
 ];
