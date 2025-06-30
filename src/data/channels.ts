@@ -33,12 +33,23 @@ export const sampleChannels: Channel[] = [
   {
     id: '4',
     name: 'BeIn Sport 1 HD',
-    url: 'http://bdd78.4rouwanda-shop.store/live/918454578001/index.m3u8?',
+    url: 'http://bdd78.4rouwanda-shop.store/live/918454578001/index.m3u8?,
     category: 'LIVE TV',
     country: 'QATAR',
     language: 'ARABIC',
     description: 'SPORT stream',
-  },
+  }
+  {
+    id: '7',
+    name: 'BeIn Sport 2HD',
+    url: 'http://het112a.4rouwanda-shop.store/live/69854211/index.m3u8?',
+    category: 'LIVE TV',
+    country: 'QATAR',
+    language: 'ARABIC',
+    description: 'SPORT stream',
+  }
+
+  ,
   
 ];
 
