@@ -48,6 +48,15 @@ export const sampleChannels: Channel[] = [
     language: 'ARABIC',
     description: 'news stream',
   }
+  {
+    id: '8',
+    name: 'Sky News Arabia',
+    url: 'https://stream.skynewsarabia.com/ott/ott.m3u8',
+    category: 'LIVE TV',
+    country: 'palestine',
+    language: 'ARABIC',
+    description: 'news stream',
+  }
 
 ];
 
