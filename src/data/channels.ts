@@ -49,7 +49,7 @@ export const sampleChannels: Channel[] = [
     description: 'news stream',
   }
   {
-    id: '8',
+    id: '9',
     name: 'Sky News Arabia',
     url: 'https://stream.skynewsarabia.com/ott/ott.m3u8',
     category: 'LIVE TV',
