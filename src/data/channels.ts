@@ -9,7 +9,7 @@ export const sampleChannels: Channel[] = [
     country: 'Qatar',
     language: 'English',
     description: 'Al Jazeera English live news channel in HD'
-  }
+  },
   {
     id: '1',
     name: 'Al Jazeera Mubasher',
