@@ -32,12 +32,12 @@ export const sampleChannels: Channel[] = [
   },
   {
     id: '4',
-    name: 'BeIn Sport 1 HD',
-    url: 'http://bdd78.4rouwanda-shop.store/live/918454578001/index.m3u8?',
+    name: 'Asharq Discovery',
+    url: 'https://svs.itworkscdn.net/asharqdiscoverylive/asharqd.smil/playlist_dvr.m3u8',
     category: 'LIVE TV',
-    country: 'QATAR',
+    country: 'saoudia',
     language: 'ARABIC',
-    description: 'SPORT stream',
+    description: 'documentry stream',
   },
   {
     id: '7',
