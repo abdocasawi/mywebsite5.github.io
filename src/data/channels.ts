@@ -5,6 +5,7 @@ export const sampleChannels: Channel[] = [
     id: '1',
     name: 'Al Jazeera HD',
     url: 'https://live-hls-apps-aja-fa.getaj.net/AJA/index.m3u8',
+    logo: 'https://upload.wikimedia.org/wikipedia/en/thumb/f/f2/Aljazeera_eng.svg/512px-Aljazeera_eng.svg.png',
     category: 'News',
     country: 'Qatar',
     language: 'English',
