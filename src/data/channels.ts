@@ -33,12 +33,12 @@ export const sampleChannels: Channel[] = [
   },
   {
     id: '4',
-    name: 'Apple Test Stream',
-    url: 'https://devstreaming-cdn.apple.com/videos/streaming/examples/img_bipbop_adv_example_fmp4/master.m3u8',
-    category: 'Test',
-    country: 'US',
-    language: 'English',
-    description: 'Apple HLS test stream'
+    name: 'BeIn Sport 1 HD',
+    url: 'http://bdd78.4rouwanda-shop.store/live/918454578001/index.m3u8',
+    category: 'LIVE TV',
+    country: 'QATAR',
+    language: 'ARABIC',
+    description: 'SPORT stream'
   },
   
 ];
