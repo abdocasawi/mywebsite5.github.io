@@ -13,12 +13,12 @@ export const sampleChannels: Channel[] = [
   },
   {
     id: '2',
-    name: 'Big Buck Bunny',
-    url: 'https://demo.unified-streaming.com/k8s/features/stable/video/tears-of-steel/tears-of-steel.ism/.m3u8',
-    category: 'Movies',
-    country: 'US',
-    language: 'English',
-    description: 'Classic test stream content'
+    name: 'Arryadia',
+    url: 'https://cdn.live.easybroadcast.io/abr_corp/73_arryadia_k2tgcj0/corp/73_arryadia_k2tgcj0_480p/chunks_dvr.m3u8',
+    category: 'live tv',
+    country: 'morocco',
+    language: 'Arabic',
+    description: 'Sport stream content'
   },
   {
     id: '3',
