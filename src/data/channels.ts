@@ -21,7 +21,6 @@ export const sampleChannels: Channel[] = [
     language: 'ARABICh',
     description: 'News channels'
   },
-  
   {
     id: '3',
     name: 'Arryadia',
