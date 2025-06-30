@@ -12,7 +12,7 @@ export const sampleChannels: Channel[] = [
     description: 'News channels'
   },
   {
-    id: '2',
+    id: '6',
     name: 'Arryadia',
     url: 'https://cdn.live.easybroadcast.io/abr_corp/73_arryadia_k2tgcj0/corp/73_arryadia_k2tgcj0_480p/chunks_dvr.m3u8',
     category: 'live tv',
@@ -30,7 +30,7 @@ export const sampleChannels: Channel[] = [
     description: 'Apple HLS test stream'
   },
   {
-    id: '4',
+    id: '2',
     name: 'Al Jazeera HD',
     url: 'https://live-hls-apps-aja-fa.getaj.net/AJA/index.m3u8',
     category: 'News',
