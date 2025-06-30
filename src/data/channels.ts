@@ -2,6 +2,15 @@ import { Channel } from '../types';
 
 export const sampleChannels: Channel[] = [
   {
+    id: '2',
+    name: 'Al Jazeera HD',
+    url: 'https://live-hls-apps-aja-fa.getaj.net/AJA/index.m3u8',
+    category: 'News',
+    country: 'Qatar',
+    language: 'English',
+    description: 'Al Jazeera English live news channel in HD'
+  }
+  {
     id: '1',
     name: 'Al Jazeera Mubasher',
     logo: 'https://www.google.com/url?sa=i&url=https%3A%2F%2Fwww.youtube.com%2Fchannel%2FUCCv1Pd24oPErw5S7zJWltnQ%2Fabout&psig=AOvVaw3iyBli2ONm8kFiBstmfM7u&ust=1751387270117000&source=images&cd=vfe&opi=89978449&ved=0CBEQjRxqFwoTCODql5_LmY4DFQAAAAAdAAAAABAE',
@@ -29,15 +38,7 @@ export const sampleChannels: Channel[] = [
     language: 'English',
     description: 'Apple HLS test stream'
   },
-  {
-    id: '2',
-    name: 'Al Jazeera HD',
-    url: 'https://live-hls-apps-aja-fa.getaj.net/AJA/index.m3u8',
-    category: 'News',
-    country: 'Qatar',
-    language: 'English',
-    description: 'Al Jazeera English live news channel in HD'
-  }
+  
 ];
 
 export const categories = [
