@@ -47,7 +47,7 @@ export const sampleChannels: Channel[] = [
     country: 'QATAR',
     language: 'ARABIC',
     description: 'SPORT stream',
-  },
+  }
   
 ];
 
