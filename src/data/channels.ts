@@ -2,7 +2,7 @@ import { Channel } from '../types';
 
 export const sampleChannels: Channel[] = [
   {
-    id: '2',
+    id: '1',
     name: 'Al Jazeera HD',
     url: 'https://live-hls-apps-aja-fa.getaj.net/AJA/index.m3u8',
     category: 'News',
@@ -11,7 +11,7 @@ export const sampleChannels: Channel[] = [
     description: 'Al Jazeera English live news channel in HD'
   },
   {
-    id: '1',
+    id: '2',
     name: 'Al Jazeera Mubasher',
     logo: 'https://www.google.com/url?sa=i&url=https%3A%2F%2Fwww.youtube.com%2Fchannel%2FUCCv1Pd24oPErw5S7zJWltnQ%2Fabout&psig=AOvVaw3iyBli2ONm8kFiBstmfM7u&ust=1751387270117000&source=images&cd=vfe&opi=89978449&ved=0CBEQjRxqFwoTCODql5_LmY4DFQAAAAAdAAAAABAE',
     url: 'https://live-hls-apps-ajm-fa.getaj.net/AJM/index.m3u8',
@@ -21,7 +21,7 @@ export const sampleChannels: Channel[] = [
     description: 'News channels'
   },
   {
-    id: '6',
+    id: '3',
     name: 'Arryadia',
     url: 'https://cdn.live.easybroadcast.io/abr_corp/73_arryadia_k2tgcj0/corp/73_arryadia_k2tgcj0_480p/chunks_dvr.m3u8',
     category: 'live tv',
@@ -30,7 +30,7 @@ export const sampleChannels: Channel[] = [
     description: 'Sport stream content'
   },
   {
-    id: '3',
+    id: '4',
     name: 'Apple Test Stream',
     url: 'https://devstreaming-cdn.apple.com/videos/streaming/examples/img_bipbop_adv_example_fmp4/master.m3u8',
     category: 'Test',
