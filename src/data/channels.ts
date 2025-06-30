@@ -38,7 +38,7 @@ export const sampleChannels: Channel[] = [
     category: 'LIVE TV',
     country: 'QATAR',
     language: 'ARABIC',
-    description: 'SPORT stream'
+    description: 'SPORT stream',
   },
   
 ];
