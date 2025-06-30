@@ -41,12 +41,12 @@ export const sampleChannels: Channel[] = [
   },
   {
     id: '7',
-    name: 'BeIn Sport 2HD',
-    url: 'https://www.elahmad.com/tv/mobiletv/glarb.php?id=bein_m_2',
+    name: 'Palestine Today',
+    url: 'https://live.paltodaytv.com/paltv/live/playlist.m3u8',
     category: 'LIVE TV',
-    country: 'QATAR',
+    country: 'palestine',
     language: 'ARABIC',
-    description: 'SPORT stream',
+    description: 'news stream',
   }
 
 ];
