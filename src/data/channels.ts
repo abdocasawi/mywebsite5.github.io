@@ -40,7 +40,7 @@ export const sampleChannels: Channel[] = [
     description: 'documentry stream',
   },
   {
-    id: '7',
+    id: '5',
     name: 'Palestine Today',
     url: 'https://live.paltodaytv.com/paltv/live/playlist.m3u8',
     category: 'LIVE TV',
@@ -49,7 +49,7 @@ export const sampleChannels: Channel[] = [
     description: 'news stream',
   },
   {
-    id: '5',
+    id: '6',
     name: 'Sky News Arabia',
     url: 'https://stream.skynewsarabia.com/ott/ott.m3u8',
     category: 'LIVE TV',
@@ -58,7 +58,7 @@ export const sampleChannels: Channel[] = [
     description: 'news stream',
   },
   {
-    id: '9',
+    id: '7',
     name: '2M MAROC',
     url: 'https://fl1002.bozztv.com/ga-2mmaroc-hd/index.m3u8',
     category: 'LIVE TV',
@@ -67,7 +67,7 @@ export const sampleChannels: Channel[] = [
     description: 'news stream',
   },
   {
-    id: '10',
+    id: '8',
     name: 'AFLAM ',
     url: 'https://fl1002.bozztv.com/ga-aflamtv7/index.m3u8',
     category: 'LIVE TV',
@@ -76,7 +76,7 @@ export const sampleChannels: Channel[] = [
     description: 'news stream',
   },
   {
-    id: '10',
+    id: '9',
     name: 'AlArabyTV ',
     url: 'https://alarabyta.cdn.octivid.com/alaraby/smil:alaraby.stream.smil/chunklist.m3u8',
     category: 'LIVE TV',
@@ -85,7 +85,7 @@ export const sampleChannels: Channel[] = [
     description: 'stream',
   },
   {
-    id: '4',
+    id: '10',
     name: 'AlArabyTV2',
     url: 'https://alarabyta.cdn.octivid.com/alaraby2n/smil:alaraby2n.stream.smil/chunklist.m3u8',
     category: 'LIVE TV',
@@ -94,7 +94,7 @@ export const sampleChannels: Channel[] = [
     description: 'stream',
   },
   {
-    id: '7',
+    id: '11',
     name: 'AlMaghribia',
     url: 'https://cdn.live.easybroadcast.io/abr_corp/73_almaghribia_83tz85q/corp/73_almaghribia_83tz85q_480p/chunks_dvr.m3u8',
     category: 'LIVE TV',
@@ -103,7 +103,7 @@ export const sampleChannels: Channel[] = [
     description: 'stream',
   },
   {
-    id: '5',
+    id: '12',
     name: 'mbc1hd',
     url: 'https://d3o3cim6uzorb4.cloudfront.net/out/v1/0965e4d7deae49179172426cbfb3bc5e/index.m3u8',
     category: 'LIVE TV',
@@ -112,7 +112,7 @@ export const sampleChannels: Channel[] = [
     description: 'stream',
   },
   {
-    id: '9',
+    id: '13',
     name: 'mbc2hd',
     url: 'https://edge66.magictvbox.com/liveApple/MBC_2/index.m3u8',
     category: 'LIVE TV',
@@ -121,7 +121,7 @@ export const sampleChannels: Channel[] = [
     description: 'stream',
   },
   {
-    id: '10',
+    id: '14',
     name: 'mbc3hd',
     url: 'https://shls-mbc3-prod-dub.shahid.net/out/v1/d5bbe570e1514d3d9a142657d33d85e6/index.m3u8',
     category: 'LIVE TV',
@@ -130,7 +130,7 @@ export const sampleChannels: Channel[] = [
     description: 'stream',
   },
   {
-    id: '10',
+    id: '15',
     name: 'mbc4hd',
     url: 'https://shls-masr-prod-dub.shahid.net/out/v1/c08681f81775496ab4afa2bac7ae7638/index.m3u8',
     category: 'LIVE TV',
@@ -139,14 +139,14 @@ export const sampleChannels: Channel[] = [
     description: 'stream',
   },
   {
-    id: '10',
+    id: '16',
     name: 'mbc5hd',
     url: 'https://shls-mbc5-prod-dub.shahid.net/out/v1/2720564b6a4641658fdfb6884b160da2/index.m3u8',
     category: 'LIVE TV',
     country: 'arab',
     language: 'ARABIC',
     description: 'stream',
-  }
+  },
 
 ];
 
