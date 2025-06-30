@@ -38,7 +38,7 @@ export const sampleChannels: Channel[] = [
     country: 'QATAR',
     language: 'ARABIC',
     description: 'SPORT stream',
-  }
+  },
   {
     id: '7',
     name: 'BeIn Sport 2HD',
