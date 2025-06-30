@@ -48,9 +48,9 @@ export const sampleChannels: Channel[] = [
     language: 'ARABIC',
     description: 'SPORT stream',
   }
-  
+  <iframe width="560" height="315" src="https://www.elahmad.com/tv/mobiletv/glarb.php?id=bein_m_2" style="border:none;" allowfullscreen allow="autoplay; fullscreen; picture-in-picture; xr-spatial-tracking; encrypted-media"></iframe>
 ];
-<iframe width="560" height="315" src="https://www.elahmad.com/tv/mobiletv/glarb.php?id=bein_m_2" style="border:none;" allowfullscreen allow="autoplay; fullscreen; picture-in-picture; xr-spatial-tracking; encrypted-media"></iframe>,
+
 export const categories = [
   'All',
   'Entertainment',
