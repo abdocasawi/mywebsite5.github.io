@@ -11,7 +11,7 @@ export const Header: React.FC = () => {
             <div className="w-8 h-8 bg-gradient-to-br from-purple-500 to-pink-500 rounded-lg flex items-center justify-center">
               <Radio className="w-5 h-5 text-white" />
             </div>
-            <h1 className="text-xl font-bold text-white">StreamABD</h1>
+            <h1 className="text-xl font-bold text-white">StreamHub</h1>
           </div>
 
           {/* Navigation */}
