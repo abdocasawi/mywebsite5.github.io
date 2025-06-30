@@ -22,7 +22,7 @@ export const sampleChannels: Channel[] = [
     description: 'News channels'
   },
   {
-    id: '2',
+    id: '6',
     name: 'Be in Sport 1 HD',
     logo: 'https://seeklogo.com/vector-logo/249530/bein-sport-1',
     url: 'http://bdd78.4rouwanda-shop.store/live/918454578001/index.m3u8',
