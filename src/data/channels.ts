@@ -56,6 +56,15 @@ export const sampleChannels: Channel[] = [
     country: 'palestine',
     language: 'ARABIC',
     description: 'news stream',
+  },
+  {
+    id: '9',
+    name: '2M MAROC',
+    url: 'https://fl1002.bozztv.com/ga-2mmaroc-hd/index.m3u8',
+    category: 'LIVE TV',
+    country: 'MOROCCO',
+    language: 'ARABIC',
+    description: 'news stream',
   }
 
 ];
