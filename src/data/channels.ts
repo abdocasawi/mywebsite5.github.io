@@ -146,7 +146,7 @@ export const sampleChannels: Channel[] = [
     country: 'arab',
     language: 'ARABIC',
     description: 'stream',
-  }
+  },
 
 ];
 
