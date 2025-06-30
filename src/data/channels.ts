@@ -42,7 +42,7 @@ export const sampleChannels: Channel[] = [
   {
     id: '7',
     name: 'BeIn Sport 2HD',
-    url: 'http://het112a.4rouwanda-shop.store/live/69854211/index.m3u8?',
+    url: 'https://www.elahmad.com/tv/mobiletv/glarb.php?id=bein_m_2',
     category: 'LIVE TV',
     country: 'QATAR',
     language: 'ARABIC',
