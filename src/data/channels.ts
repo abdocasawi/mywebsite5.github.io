@@ -24,8 +24,8 @@ export const sampleChannels: Channel[] = [
   {
     id: '2',
     name: 'Be in Sport 1 HD',
-    logo: 'http://bdd78.4rouwanda-shop.store/live/918454578001/index.m3u8',
-    url: 'https://live-hls-apps-ajm-fa.getaj.net/AJM/index.m3u8',
+    logo: 'https://seeklogo.com/vector-logo/249530/bein-sport-1',
+    url: 'http://bdd78.4rouwanda-shop.store/live/918454578001/index.m3u8',
     category: 'SPORT',
     country: 'QATAR',
     language: 'ARABICh',
