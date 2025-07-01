@@ -150,7 +150,7 @@ export const sampleChannels: Channel[] = [
   {
     id: '17',
     name: 'Holiday Harmony',
-    url: 'https://dayt-fer-oo9.gamescdn.online:183/d/32nnkkdcmi3hdr7efmklln2nuuywesv7muoippwby6ydmq3xq4rne6kiiu5w2zgnal5n6wy3/video.mp4',
+    url: 'https://d0o0d.com/e/ie7czsx1f2v4',
     category: 'Movies',
     country: 'spain',
     language: 'spain',
