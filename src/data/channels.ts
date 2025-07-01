@@ -202,13 +202,13 @@ export const sampleChannels: Channel[] = [
     description: 'DRAMA stream',
   },
   {
-    id: '6',
+    id: 'MOVIES ACTION',
     name: 'Sky News Arabia',
-    url: 'https://stream.skynewsarabia.com/ott/ott.m3u8',
-    category: 'News',
-    country: 'palestine',
+    url: 'https://shls-live-enc.edgenextcdn.net/out/v1/46079e838e65490c8299f902a7731168/index.m3u8',
+    category: 'MOVIES',
+    country: 'INTERNET',
     language: 'ARABIC',
-    description: 'news stream',
+    description: 'MOVIES stream',
   },
   {
     id: '7',
