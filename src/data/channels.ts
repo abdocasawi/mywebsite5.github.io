@@ -150,7 +150,7 @@ export const sampleChannels: Channel[] = [
   {
     id: '17',
     name: 'Holiday Harmony',
-    url: 'http://esfamous.top:8080/movie/es9801738324745002/687b695185f2/8362.mkv',
+    url: 'https://dayt-fer-oo9.gamescdn.online:183/d/32nnkkdcmi3hdr7efmklln2nuuywesv7muoippwby6ydmq3xq4rne6kiiu5w2zgnal5n6wy3/video.mp4',
     category: 'Movies',
     country: 'spain',
     language: 'spain',
