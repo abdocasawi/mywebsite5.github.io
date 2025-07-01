@@ -26,12 +26,6 @@ export const VideoPlayer: React.FC<VideoPlayerProps> = ({ channel, onChannelEnd 
   );
 
   useEffect(() => {
-    if (videoRef.current && channel && settings.autoplay) {
-      videoRef.current.play().catch(console.error);
-    }
-  }, [channel, settings.autoplay]);
-
-  useEffect(() => {
     let timeoutId: NodeJS.Timeout;
     
     const handleMouseMove = () => {
@@ -49,6 +43,12 @@ export const VideoPlayer: React.FC<VideoPlayerProps> = ({ channel, onChannelEnd 
       };
     }
   }, []);
+
+  const handleCanPlay = () => {
+    if (videoRef.current && settings.autoplay) {
+      videoRef.current.play().catch(console.error);
+    }
+  };
 
   const togglePlay = () => {
     if (videoRef.current) {
@@ -119,6 +119,7 @@ export const VideoPlayer: React.FC<VideoPlayerProps> = ({ channel, onChannelEnd 
         onPlay={() => setIsPlaying(true)}
         onPause={() => setIsPlaying(false)}
         onLoadStart={() => setIsPlaying(false)}
+        onCanPlay={handleCanPlay}
         playsInline
         controls={false}
       />
