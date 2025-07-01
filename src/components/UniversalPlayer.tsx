@@ -1,6 +1,6 @@
 import React from 'react';
 import VideoPlayer from './VideoPlayer';
-import { MKVPlayer } from './MKVPlayer';
+import MKVPlayer from './MKVPlayer';
 import { Channel } from '../types';
 
 interface UniversalPlayerProps {

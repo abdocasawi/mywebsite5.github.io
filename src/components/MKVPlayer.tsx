@@ -7,7 +7,7 @@ interface MKVPlayerProps {
   onChannelEnd?: () => void;
 }
 
-export const MKVPlayer: React.FC<MKVPlayerProps> = ({ channel, onChannelEnd }) => {
+const MKVPlayer: React.FC<MKVPlayerProps> = ({ channel, onChannelEnd }) => {
   const videoRef = useRef<HTMLVideoElement>(null);
   const [isPlaying, setIsPlaying] = useState(false);
   const [showControls, setShowControls] = useState(true);
@@ -390,3 +390,5 @@ export const MKVPlayer: React.FC<MKVPlayerProps> = ({ channel, onChannelEnd }) =
     </div>
   );
 };
+
+export default MKVPlayer;
