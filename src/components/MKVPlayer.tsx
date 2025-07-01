@@ -1,5 +1,5 @@
 import React, { useRef, useState, useEffect } from 'react';
-import { Play, Pause, Volume2, VolumeX, Maximize, Minimize, Settings, PictureInPicture2, SkipBack, SkipForward } from 'lucide-react';
+import { Play, Pause, Volume2, VolumeX, Maximize, Minimize, Settings, PictureInPicture2, SkipBack, SkipForward, AlertCircle } from 'lucide-react';
 import { Channel, PlayerSettings } from '../types';
 
 interface MKVPlayerProps {
@@ -24,12 +24,18 @@ export const MKVPlayer: React.FC<MKVPlayerProps> = ({ channel, onChannelEnd }) =
   });
 
   useEffect(() => {
-    if (videoRef.current && channel && settings.autoplay) {
+    if (videoRef.current && channel) {
       setIsLoading(true);
       setError(null);
+      setIsPlaying(false);
+      setCurrentTime(0);
+      setDuration(0);
+      
+      // Reset video source
+      videoRef.current.src = channel.url;
       videoRef.current.load();
     }
-  }, [channel, settings.autoplay]);
+  }, [channel]);
 
   useEffect(() => {
     let timeoutId: NodeJS.Timeout;
@@ -57,11 +63,15 @@ export const MKVPlayer: React.FC<MKVPlayerProps> = ({ channel, onChannelEnd }) =
 
   const handleCanPlay = () => {
     setIsLoading(false);
+    if (settings.autoplay && videoRef.current) {
+      videoRef.current.play().catch(handleError);
+    }
   };
 
   const handleLoadedMetadata = () => {
     if (videoRef.current) {
       setDuration(videoRef.current.duration);
+      setIsLoading(false);
     }
   };
 
@@ -71,9 +81,37 @@ export const MKVPlayer: React.FC<MKVPlayerProps> = ({ channel, onChannelEnd }) =
     }
   };
 
-  const handleError = () => {
+  const handleError = (event?: any) => {
     setIsLoading(false);
-    setError('Failed to load video file. Please check the file format or URL.');
+    setIsPlaying(false);
+    
+    let errorMessage = 'Failed to load video file.';
+    
+    if (videoRef.current?.error) {
+      switch (videoRef.current.error.code) {
+        case MediaError.MEDIA_ERR_ABORTED:
+          errorMessage = 'Video loading was aborted.';
+          break;
+        case MediaError.MEDIA_ERR_NETWORK:
+          errorMessage = 'Network error occurred while loading video.';
+          break;
+        case MediaError.MEDIA_ERR_DECODE:
+          errorMessage = 'Video format not supported or corrupted.';
+          break;
+        case MediaError.MEDIA_ERR_SRC_NOT_SUPPORTED:
+          errorMessage = 'Video format or URL not supported.';
+          break;
+        default:
+          errorMessage = 'Unknown error occurred while loading video.';
+      }
+    }
+    
+    // Add additional context for common issues
+    if (channel?.url.startsWith('http://')) {
+      errorMessage += ' Note: HTTP URLs may be blocked by HTTPS sites.';
+    }
+    
+    setError(errorMessage);
   };
 
   const handleEnded = () => {
@@ -84,7 +122,7 @@ export const MKVPlayer: React.FC<MKVPlayerProps> = ({ channel, onChannelEnd }) =
   };
 
   const togglePlay = () => {
-    if (videoRef.current) {
+    if (videoRef.current && !error) {
       if (isPlaying) {
         videoRef.current.pause();
       } else {
@@ -152,7 +190,17 @@ export const MKVPlayer: React.FC<MKVPlayerProps> = ({ channel, onChannelEnd }) =
     }
   };
 
+  const retryLoad = () => {
+    if (videoRef.current && channel) {
+      setError(null);
+      setIsLoading(true);
+      videoRef.current.load();
+    }
+  };
+
   const formatTime = (time: number) => {
+    if (!isFinite(time)) return '0:00';
+    
     const hours = Math.floor(time / 3600);
     const minutes = Math.floor((time % 3600) / 60);
     const seconds = Math.floor(time % 60);
@@ -179,7 +227,6 @@ export const MKVPlayer: React.FC<MKVPlayerProps> = ({ channel, onChannelEnd }) =
       <video
         ref={videoRef}
         className="w-full h-full object-cover"
-        src={channel.url}
         onPlay={() => setIsPlaying(true)}
         onPause={() => setIsPlaying(false)}
         onLoadStart={handleLoadStart}
@@ -191,14 +238,16 @@ export const MKVPlayer: React.FC<MKVPlayerProps> = ({ channel, onChannelEnd }) =
         playsInline
         controls={false}
         preload="metadata"
+        crossOrigin="anonymous"
       />
 
       {/* Loading Overlay */}
-      {isLoading && (
+      {isLoading && !error && (
         <div className="absolute inset-0 bg-black bg-opacity-75 flex items-center justify-center">
           <div className="text-center text-white">
             <div className="animate-spin w-8 h-8 border-2 border-purple-500 border-t-transparent rounded-full mx-auto mb-4"></div>
             <p>Loading video...</p>
+            <p className="text-sm text-gray-400 mt-2">Please wait while the video loads</p>
           </div>
         </div>
       )}
@@ -206,12 +255,28 @@ export const MKVPlayer: React.FC<MKVPlayerProps> = ({ channel, onChannelEnd }) =
       {/* Error Overlay */}
       {error && (
         <div className="absolute inset-0 bg-black bg-opacity-75 flex items-center justify-center">
-          <div className="text-center text-white">
+          <div className="text-center text-white max-w-md mx-auto p-6">
             <div className="w-16 h-16 bg-red-500 rounded-full flex items-center justify-center mx-auto mb-4">
-              <VolumeX className="w-8 h-8" />
+              <AlertCircle className="w-8 h-8" />
             </div>
-            <p className="text-lg mb-2">Playback Error</p>
-            <p className="text-sm text-gray-400">{error}</p>
+            <p className="text-lg mb-2 font-semibold">Video Load Error</p>
+            <p className="text-sm text-gray-300 mb-4 leading-relaxed">{error}</p>
+            <div className="space-y-2">
+              <button
+                onClick={retryLoad}
+                className="bg-purple-600 hover:bg-purple-700 text-white px-4 py-2 rounded-lg transition-colors"
+              >
+                Retry Loading
+              </button>
+              <div className="text-xs text-gray-400">
+                <p>Troubleshooting tips:</p>
+                <ul className="list-disc list-inside mt-1 space-y-1">
+                  <li>Check if the video URL is accessible</li>
+                  <li>Ensure the server allows cross-origin requests</li>
+                  <li>Try a different video format (MP4, WebM)</li>
+                </ul>
+              </div>
+            </div>
           </div>
         </div>
       )}
@@ -219,8 +284,8 @@ export const MKVPlayer: React.FC<MKVPlayerProps> = ({ channel, onChannelEnd }) =
       {/* Video Info */}
       <div className="absolute top-4 left-4 bg-black bg-opacity-75 rounded-lg px-3 py-2 text-white text-sm">
         <div className="flex items-center space-x-2">
-          <div className="w-2 h-2 rounded-full bg-blue-500"></div>
-          <span>MKV</span>
+          <div className={`w-2 h-2 rounded-full ${error ? 'bg-red-500' : isLoading ? 'bg-yellow-500' : 'bg-blue-500'}`}></div>
+          <span>VIDEO</span>
           {duration > 0 && <span className="text-gray-300">• {formatTime(duration)}</span>}
         </div>
       </div>
@@ -235,85 +300,92 @@ export const MKVPlayer: React.FC<MKVPlayerProps> = ({ channel, onChannelEnd }) =
         </div>
 
         {/* Play/Pause Button */}
-        <div className="absolute inset-0 flex items-center justify-center">
-          <button
-            onClick={togglePlay}
-            className="bg-white bg-opacity-20 hover:bg-opacity-30 rounded-full p-4 transition-all duration-200 backdrop-blur-sm"
-          >
-            {isPlaying ? (
-              <Pause className="w-8 h-8 text-white" />
-            ) : (
-              <Play className="w-8 h-8 text-white ml-1" />
-            )}
-          </button>
-        </div>
+        {!error && (
+          <div className="absolute inset-0 flex items-center justify-center">
+            <button
+              onClick={togglePlay}
+              disabled={isLoading}
+              className="bg-white bg-opacity-20 hover:bg-opacity-30 rounded-full p-4 transition-all duration-200 backdrop-blur-sm disabled:opacity-50"
+            >
+              {isLoading ? (
+                <div className="animate-spin w-8 h-8 border-2 border-white border-t-transparent rounded-full"></div>
+              ) : isPlaying ? (
+                <Pause className="w-8 h-8 text-white" />
+              ) : (
+                <Play className="w-8 h-8 text-white ml-1" />
+              )}
+            </button>
+          </div>
+        )}
 
         {/* Bottom Controls */}
-        <div className="absolute bottom-0 left-0 right-0 p-4">
-          {/* Progress Bar */}
-          {duration > 0 && (
-            <div className="mb-4">
-              <input
-                type="range"
-                min="0"
-                max={duration}
-                value={currentTime}
-                onChange={handleSeek}
-                className="w-full h-1 bg-gray-600 rounded-lg appearance-none cursor-pointer slider"
-              />
-              <div className="flex justify-between text-xs text-gray-300 mt-1">
-                <span>{formatTime(currentTime)}</span>
-                <span>{formatTime(duration)}</span>
-              </div>
-            </div>
-          )}
-
-          <div className="flex items-center justify-between text-white">
-            
-            {/* Left Controls */}
-            <div className="flex items-center space-x-4">
-              <button onClick={togglePlay} className="hover:text-purple-400 transition-colors">
-                {isPlaying ? <Pause className="w-5 h-5" /> : <Play className="w-5 h-5" />}
-              </button>
-              
-              <button onClick={skipBackward} className="hover:text-purple-400 transition-colors">
-                <SkipBack className="w-5 h-5" />
-              </button>
-              
-              <button onClick={skipForward} className="hover:text-purple-400 transition-colors">
-                <SkipForward className="w-5 h-5" />
-              </button>
-              
-              <div className="flex items-center space-x-2">
-                <button onClick={toggleMute} className="hover:text-purple-400 transition-colors">
-                  {settings.muted ? <VolumeX className="w-5 h-5" /> : <Volume2 className="w-5 h-5" />}
-                </button>
+        {!error && (
+          <div className="absolute bottom-0 left-0 right-0 p-4">
+            {/* Progress Bar */}
+            {duration > 0 && (
+              <div className="mb-4">
                 <input
                   type="range"
                   min="0"
-                  max="1"
-                  step="0.1"
-                  value={settings.muted ? 0 : settings.volume}
-                  onChange={handleVolumeChange}
-                  className="w-20 h-1 bg-gray-600 rounded-lg appearance-none cursor-pointer slider"
+                  max={duration}
+                  value={currentTime}
+                  onChange={handleSeek}
+                  className="w-full h-1 bg-gray-600 rounded-lg appearance-none cursor-pointer slider"
                 />
+                <div className="flex justify-between text-xs text-gray-300 mt-1">
+                  <span>{formatTime(currentTime)}</span>
+                  <span>{formatTime(duration)}</span>
+                </div>
+              </div>
+            )}
+
+            <div className="flex items-center justify-between text-white">
+              
+              {/* Left Controls */}
+              <div className="flex items-center space-x-4">
+                <button onClick={togglePlay} className="hover:text-purple-400 transition-colors" disabled={isLoading}>
+                  {isPlaying ? <Pause className="w-5 h-5" /> : <Play className="w-5 h-5" />}
+                </button>
+                
+                <button onClick={skipBackward} className="hover:text-purple-400 transition-colors" disabled={isLoading}>
+                  <SkipBack className="w-5 h-5" />
+                </button>
+                
+                <button onClick={skipForward} className="hover:text-purple-400 transition-colors" disabled={isLoading}>
+                  <SkipForward className="w-5 h-5" />
+                </button>
+                
+                <div className="flex items-center space-x-2">
+                  <button onClick={toggleMute} className="hover:text-purple-400 transition-colors">
+                    {settings.muted ? <VolumeX className="w-5 h-5" /> : <Volume2 className="w-5 h-5" />}
+                  </button>
+                  <input
+                    type="range"
+                    min="0"
+                    max="1"
+                    step="0.1"
+                    value={settings.muted ? 0 : settings.volume}
+                    onChange={handleVolumeChange}
+                    className="w-20 h-1 bg-gray-600 rounded-lg appearance-none cursor-pointer slider"
+                  />
+                </div>
+              </div>
+
+              {/* Right Controls */}
+              <div className="flex items-center space-x-4">
+                <button onClick={togglePictureInPicture} className="hover:text-purple-400 transition-colors">
+                  <PictureInPicture2 className="w-5 h-5" />
+                </button>
+                <button className="hover:text-purple-400 transition-colors">
+                  <Settings className="w-5 h-5" />
+                </button>
+                <button onClick={toggleFullscreen} className="hover:text-purple-400 transition-colors">
+                  {settings.fullscreen ? <Minimize className="w-5 h-5" /> : <Maximize className="w-5 h-5" />}
+                </button>
               </div>
             </div>
-
-            {/* Right Controls */}
-            <div className="flex items-center space-x-4">
-              <button onClick={togglePictureInPicture} className="hover:text-purple-400 transition-colors">
-                <PictureInPicture2 className="w-5 h-5" />
-              </button>
-              <button className="hover:text-purple-400 transition-colors">
-                <Settings className="w-5 h-5" />
-              </button>
-              <button onClick={toggleFullscreen} className="hover:text-purple-400 transition-colors">
-                {settings.fullscreen ? <Minimize className="w-5 h-5" /> : <Maximize className="w-5 h-5" />}
-              </button>
-            </div>
           </div>
-        </div>
+        )}
       </div>
     </div>
   );
