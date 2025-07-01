@@ -175,7 +175,7 @@ export const sampleChannels: Channel[] = [
     description: 'ARABIC channels'
   },
   {
-    id: '3',
+    id: '20',
     name: 'Arryadia',
     url: 'https://cdn.live.easybroadcast.io/abr_corp/73_arryadia_k2tgcj0/corp/73_arryadia_k2tgcj0_480p/chunks_dvr.m3u8',
     category: 'Sports',
