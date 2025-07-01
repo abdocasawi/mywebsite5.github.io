@@ -142,7 +142,7 @@ export const sampleChannels: Channel[] = [
     id: '16',
     name: 'mbc5hd',
     url: 'https://shls-mbc5-prod-dub.shahid.net/out/v1/2720564b6a4641658fdfb6884b160da2/index.m3u8',
-    category: 'LIVE TV',
+    category: 'ARABIC CHANNELS',
     country: 'arab',
     language: 'ARABIC',
     description: 'stream',
