@@ -156,6 +156,7 @@ export const sampleChannels: Channel[] = [
     language: 'spain',
     description: 'stream',
   },
+  
 ];
 
 export const categories = [
