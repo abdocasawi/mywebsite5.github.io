@@ -147,6 +147,16 @@ export const sampleChannels: Channel[] = [
     language: 'ARABIC',
     description: 'stream',
   },
+  {
+    id: '17',
+    name: 'Holiday Harmony',
+    url: 'http://esfamous.top:8080/movie/es9801738324745002/687b695185f2/8362.mkv',
+    category: 'Movies',
+    country: 'arab',
+    language: 'spain',
+    description: 'stream',
+  },
+  
 
 ];
 
