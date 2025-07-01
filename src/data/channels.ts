@@ -157,7 +157,7 @@ export const sampleChannels: Channel[] = [
     description: 'stream',
   },
   {
-    id: '1',
+    id: '18',
     name: 'BBCArabic',
     url: 'https://vs-cmaf-pushb-ww-live.akamaized.net/x=4/i=urn:bbc:pips:service:bbc_arabic_tv/pc_hd_abr_v2.mpd',
     category: 'NEWS',
@@ -166,14 +166,13 @@ export const sampleChannels: Channel[] = [
     description: 'bbc arabic channel'
   },
   {
-    id: '2',
-    name: 'Al Jazeera Mubasher',
-    logo: 'https://www.google.com/url?sa=i&url=https%3A%2F%2Fwww.youtube.com%2Fchannel%2FUCCv1Pd24oPErw5S7zJWltnQ%2Fabout&psig=AOvVaw3iyBli2ONm8kFiBstmfM7u&ust=1751387270117000&source=images&cd=vfe&opi=89978449&ved=0CBEQjRxqFwoTCODql5_LmY4DFQAAAAAdAAAAABAE',
-    url: 'https://live-hls-apps-ajm-fa.getaj.net/AJM/index.m3u8',
-    category: 'NEWS',
+    id: '19'',
+    name: 'DUBAI ONE',
+    url: 'https://dminnvllta.cdn.mgmlcdn.com/dubaione/smil:dubaione.stream.smil/chunklist.m3u8',
+    category: 'ARABIC CHANNELS',
     country: 'arab',
     language: 'ARABICh',
-    description: 'News channels'
+    description: 'ARABIC channels'
   },
   {
     id: '3',
