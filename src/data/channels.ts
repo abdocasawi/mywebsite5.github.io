@@ -157,5 +157,5 @@ export const categories = [
   'Sports',
   'Movies',
   'Live TV',
-  'Test'
+  'ARABIC CHANNELS',
 ];
