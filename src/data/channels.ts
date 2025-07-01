@@ -166,7 +166,7 @@ export const sampleChannels: Channel[] = [
     description: 'bbc arabic channel'
   },
   {
-    id: '19'',
+    id: '19',
     name: 'DUBAI ONE',
     url: 'https://dminnvllta.cdn.mgmlcdn.com/dubaione/smil:dubaione.stream.smil/chunklist.m3u8',
     category: 'ARABIC CHANNELS',
