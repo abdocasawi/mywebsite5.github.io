@@ -176,12 +176,12 @@ export const sampleChannels: Channel[] = [
   },
   {
     id: '20',
-    name: 'Arryadia',
-    url: 'https://cdn.live.easybroadcast.io/abr_corp/73_arryadia_k2tgcj0/corp/73_arryadia_k2tgcj0_480p/chunks_dvr.m3u8',
-    category: 'Sports',
-    country: 'morocco',
+    name: 'DW Arabic',
+    url: 'https://dwamdstream103.akamaized.net/hls/live/2015526/dwstream103/index.m3u8',
+    category: 'news',
+    country: 'germany',
     language: 'Arabic',
-    description: 'Sport stream content'
+    description: 'news stream content'
   },
   {
     id: '4',
