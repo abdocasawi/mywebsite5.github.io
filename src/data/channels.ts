@@ -146,15 +146,6 @@ export const sampleChannels: Channel[] = [
     country: 'arab',
     language: 'ARABIC',
     description: 'stream',
-  },
-  {
-    id: '17',
-    name: 'Holiday Harmony',
-    url: 'https://d0o0d.com/e/ie7czsx1f2v4',
-    category: 'Movies',
-    country: 'spain',
-    language: 'spain',
-    description: 'stream',
   }, 
 ];
 
@@ -165,5 +156,4 @@ export const categories = [
   'All',
   'Entertainment',
   'Sports',
-  'Movies',
 ];
