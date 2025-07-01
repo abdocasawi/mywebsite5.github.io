@@ -8,7 +8,7 @@ interface VideoPlayerProps {
   onChannelEnd?: () => void;
 }
 
-export const VideoPlayer: React.FC<VideoPlayerProps> = ({ channel, onChannelEnd }) => {
+const VideoPlayer: React.FC<VideoPlayerProps> = ({ channel, onChannelEnd }) => {
   const videoRef = useRef<HTMLVideoElement>(null);
   const [isPlaying, setIsPlaying] = useState(false);
   const [showControls, setShowControls] = useState(true);
@@ -223,3 +223,5 @@ export const VideoPlayer: React.FC<VideoPlayerProps> = ({ channel, onChannelEnd 
     </div>
   );
 };
+
+export default VideoPlayer;
