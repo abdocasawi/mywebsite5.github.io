@@ -151,11 +151,11 @@ export const sampleChannels: Channel[] = [
 ];
 
 export const categories = [
+  'NEWS',
   'MOROCCO',
+  'ARABIC CHANNELS',
   'All',
   'Entertainment',
-  'News',
   'Sports',
   'Movies',
-  'ARABIC CHANNELS',
 ];
