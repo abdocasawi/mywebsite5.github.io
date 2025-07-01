@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Header } from './components/Header';
-import { VideoPlayer } from './components/VideoPlayer';
+import { UniversalPlayer } from './components/UniversalPlayer';
 import { ChannelList } from './components/ChannelList';
 import { Channel } from './types';
 import { sampleChannels } from './data/channels';
@@ -20,7 +20,7 @@ function App() {
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
           {/* Video Player */}
           <div className="lg:col-span-2">
-            <VideoPlayer 
+            <UniversalPlayer 
               channel={selectedChannel}
             />
             
@@ -47,8 +47,14 @@ function App() {
                   </div>
                   
                   <div className="flex items-center space-x-2">
-                    <div className="w-3 h-3 bg-red-500 rounded-full animate-pulse"></div>
-                    <span className="text-red-400 font-medium">LIVE</span>
+                    <div className={`w-3 h-3 rounded-full animate-pulse ${
+                      selectedChannel.url.includes('.m3u8') ? 'bg-red-500' : 'bg-blue-500'
+                    }`}></div>
+                    <span className={`font-medium ${
+                      selectedChannel.url.includes('.m3u8') ? 'text-red-400' : 'text-blue-400'
+                    }`}>
+                      {selectedChannel.url.includes('.m3u8') ? 'LIVE' : 'VIDEO'}
+                    </span>
                   </div>
                 </div>
               </div>
@@ -77,10 +83,10 @@ function App() {
           
           <div className="bg-gray-900 rounded-xl p-6 text-center">
             <div className="w-12 h-12 bg-purple-600 rounded-lg flex items-center justify-center mx-auto mb-4">
-              <span className="text-white font-bold">24/7</span>
+              <span className="text-white font-bold">MKV</span>
             </div>
-            <h3 className="text-lg font-semibold text-white mb-2">Always On</h3>
-            <p className="text-gray-400">Reliable streaming with minimal buffering and downtime</p>
+            <h3 className="text-lg font-semibold text-white mb-2">Multi-Format</h3>
+            <p className="text-gray-400">Support for MKV, MP4, and HLS streaming formats</p>
           </div>
           
           <div className="bg-gray-900 rounded-xl p-6 text-center">
