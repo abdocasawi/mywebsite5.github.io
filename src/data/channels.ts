@@ -6,7 +6,7 @@ export const sampleChannels: Channel[] = [
     name: 'Al Jazeera HD',
     url: 'https://live-hls-apps-aja-fa.getaj.net/AJA/index.m3u8',
     logo: 'https://upload.wikimedia.org/wikipedia/en/thumb/f/f2/Aljazeera_eng.svg/512px-Aljazeera_eng.svg.png',
-    category: 'ARABIC CHANNELS',
+    category: 'News',
     country: 'Qatar',
     language: 'English',
     description: 'Al Jazeera English live news channel in HD'
@@ -16,7 +16,7 @@ export const sampleChannels: Channel[] = [
     name: 'Al Jazeera Mubasher',
     logo: 'https://www.google.com/url?sa=i&url=https%3A%2F%2Fwww.youtube.com%2Fchannel%2FUCCv1Pd24oPErw5S7zJWltnQ%2Fabout&psig=AOvVaw3iyBli2ONm8kFiBstmfM7u&ust=1751387270117000&source=images&cd=vfe&opi=89978449&ved=0CBEQjRxqFwoTCODql5_LmY4DFQAAAAAdAAAAABAE',
     url: 'https://live-hls-apps-ajm-fa.getaj.net/AJM/index.m3u8',
-    category: 'ARABIC CHANNELS',
+    category: 'News',
     country: 'arab',
     language: 'ARABICh',
     description: 'News channels'
@@ -52,7 +52,7 @@ export const sampleChannels: Channel[] = [
     id: '6',
     name: 'Sky News Arabia',
     url: 'https://stream.skynewsarabia.com/ott/ott.m3u8',
-    category: 'ARABIC CHANNELS',
+    category: 'News',
     country: 'palestine',
     language: 'ARABIC',
     description: 'news stream',
