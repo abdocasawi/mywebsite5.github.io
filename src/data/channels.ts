@@ -146,7 +146,16 @@ export const sampleChannels: Channel[] = [
     country: 'arab',
     language: 'ARABIC',
     description: 'stream',
-  }, 
+  },
+  {
+    id: '17',
+    name: 'AsharqDocumentary',
+    url: 'https://svs.itworkscdn.net/asharqdocumentarylive/asharqdocumentary.smil/playlist_dvr.m3u8',
+    category: 'ARABIC CHANNELS',
+    country: 'arab',
+    language: 'ARABIC',
+    description: 'stream',
+  },
 ];
 
 export const categories = [
