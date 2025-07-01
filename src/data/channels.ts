@@ -152,12 +152,10 @@ export const sampleChannels: Channel[] = [
     name: 'Holiday Harmony',
     url: 'http://esfamous.top:8080/movie/es9801738324745002/687b695185f2/8362.mkv',
     category: 'Movies',
-    country: 'arab',
+    country: 'spain',
     language: 'spain',
     description: 'stream',
   },
-  
-
 ];
 
 export const categories = [
