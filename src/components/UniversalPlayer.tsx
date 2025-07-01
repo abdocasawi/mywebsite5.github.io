@@ -13,20 +13,15 @@ export const UniversalPlayer: React.FC<UniversalPlayerProps> = ({ channel, onCha
     return <VideoPlayer channel={channel} onChannelEnd={onChannelEnd} />;
   }
 
-  // Determine player type based on URL extension or content type
-  const isMKV = channel.url.toLowerCase().includes('.mkv') || 
-                channel.url.toLowerCase().includes('.mp4') ||
-                channel.url.toLowerCase().includes('.avi') ||
-                channel.url.toLowerCase().includes('.mov') ||
-                channel.url.toLowerCase().includes('.webm');
-
+  // Check if it's an HLS stream first (this takes priority)
   const isHLS = channel.url.toLowerCase().includes('.m3u8') ||
                 channel.url.toLowerCase().includes('hls');
 
-  // Use MKV player for video files, HLS player for streams
-  if (isMKV && !isHLS) {
-    return <MKVPlayer channel={channel} onChannelEnd={onChannelEnd} />;
+  // If it's HLS, use the VideoPlayer (HLS player)
+  if (isHLS) {
+    return <VideoPlayer channel={channel} onChannelEnd={onChannelEnd} />;
   }
 
-  return <VideoPlayer channel={channel} onChannelEnd={onChannelEnd} />;
+  // For all other URLs (direct video files), use MKVPlayer
+  return <MKVPlayer channel={channel} onChannelEnd={onChannelEnd} />;
 };
