@@ -210,15 +210,35 @@ export const sampleChannels: Channel[] = [
     language: 'ARABIC',
     description: 'MOVIES stream',
   },
+  // VLC-optimized M3U8 test channels
+  {
+    id: '24',
+    name: 'Big Buck Bunny (Test)',
+    url: 'https://test-streams.mux.dev/x36xhzz/x36xhzz.m3u8',
+    category: 'TEST',
+    country: 'Global',
+    language: 'English',
+    description: 'Test M3U8 stream for VLC player compatibility'
+  },
+  {
+    id: '25',
+    name: 'Sintel (Test)',
+    url: 'https://bitdash-a.akamaihd.net/content/sintel/hls/playlist.m3u8',
+    category: 'TEST',
+    country: 'Global',
+    language: 'English',
+    description: 'High quality test stream for VLC player'
+  }
 ];
 
 export const categories = [
+  'All',
   'NEWS',
   'MOROCCO',
   'ARABIC CHANNELS',
-  'All',
   'Entertainment',
   'Sports',
   'MOVIES',
-  'ITALIA'
+  'ITALIA',
+  'TEST'
 ];
