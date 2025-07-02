@@ -1,5 +1,5 @@
 import React, { useRef, useState, useEffect } from 'react';
-import { Play, Pause, Volume2, VolumeX, Maximize, Minimize, Settings, PictureInPicture2, AlertCircle, Download } from 'lucide-react';
+import { Play, Pause, Volume2, VolumeX, Maximize, Minimize, Settings, PictureInPicture2, AlertCircle, Download, RefreshCw } from 'lucide-react';
 import { Channel, PlayerSettings } from '../types';
 
 interface VLCPlayerProps {
@@ -17,6 +17,7 @@ const VLCPlayer: React.FC<VLCPlayerProps> = ({ channel, onChannelEnd }) => {
   const [vlcAvailable, setVlcAvailable] = useState(false);
   const [currentTime, setCurrentTime] = useState(0);
   const [duration, setDuration] = useState(0);
+  const [retryCount, setRetryCount] = useState(0);
   const [settings, setSettings] = useState<PlayerSettings>({
     volume: 1,
     muted: false,
@@ -34,11 +35,20 @@ const VLCPlayer: React.FC<VLCPlayerProps> = ({ channel, onChannelEnd }) => {
           navigator.plugins['VLC Web Plugin'] ||
           navigator.plugins['VLC Multimedia Plugin'] ||
           navigator.mimeTypes['application/x-vlc-plugin'] ||
-          window.VLCPlugin
+          (window as any).VLCPlugin ||
+          // Check for VLC ActiveX on IE/Edge
+          (window as any).ActiveXObject
         );
+        
         setVlcAvailable(hasVLCPlugin);
+        
+        // If VLC is not available, show installation prompt immediately
+        if (!hasVLCPlugin) {
+          setError('VLC Web Plugin not detected');
+        }
       } catch (e) {
         setVlcAvailable(false);
+        setError('VLC Web Plugin not available');
       }
     };
 
@@ -51,74 +61,108 @@ const VLCPlayer: React.FC<VLCPlayerProps> = ({ channel, onChannelEnd }) => {
 
     setIsLoading(true);
     setError(null);
+    setRetryCount(0);
 
-    try {
-      // Create VLC embed element
-      const vlcEmbed = document.createElement('embed');
-      vlcEmbed.setAttribute('type', 'application/x-vlc-plugin');
-      vlcEmbed.setAttribute('pluginspage', 'http://www.videolan.org');
-      vlcEmbed.setAttribute('width', '100%');
-      vlcEmbed.setAttribute('height', '100%');
-      vlcEmbed.setAttribute('id', 'vlc-player');
-      vlcEmbed.setAttribute('autoplay', settings.autoplay ? 'yes' : 'no');
-      vlcEmbed.setAttribute('loop', 'no');
-      vlcEmbed.setAttribute('volume', String(Math.round(settings.volume * 100)));
-      vlcEmbed.setAttribute('mute', settings.muted ? 'yes' : 'no');
-      vlcEmbed.setAttribute('target', channel.url);
-
-      // Clear container and add VLC embed
-      if (containerRef.current) {
-        containerRef.current.innerHTML = '';
-        containerRef.current.appendChild(vlcEmbed);
-      }
-
-      vlcRef.current = vlcEmbed;
-
-      // Set up VLC event listeners
-      const setupVLCEvents = () => {
-        try {
-          if (vlcRef.current && vlcRef.current.playlist) {
-            vlcRef.current.playlist.add(channel.url);
-            
-            if (settings.autoplay) {
-              vlcRef.current.playlist.play();
-              setIsPlaying(true);
-            }
-            
-            setIsLoading(false);
-
-            // Monitor playback state
-            const interval = setInterval(() => {
-              try {
-                if (vlcRef.current && vlcRef.current.input) {
-                  setCurrentTime(vlcRef.current.input.time / 1000);
-                  setDuration(vlcRef.current.input.length / 1000);
-                  setIsPlaying(vlcRef.current.playlist.isPlaying);
-                }
-              } catch (e) {
-                // Ignore errors during monitoring
-              }
-            }, 1000);
-
-            return () => clearInterval(interval);
-          }
-        } catch (e) {
-          console.error('VLC setup error:', e);
-          setError('Failed to initialize VLC player');
-          setIsLoading(false);
+    const initializeVLC = () => {
+      try {
+        // Clear container
+        if (containerRef.current) {
+          containerRef.current.innerHTML = '';
         }
-      };
 
-      // Wait for VLC to load
-      setTimeout(setupVLCEvents, 1000);
+        // Create VLC embed element with enhanced parameters
+        const vlcEmbed = document.createElement('embed');
+        vlcEmbed.setAttribute('type', 'application/x-vlc-plugin');
+        vlcEmbed.setAttribute('pluginspage', 'http://www.videolan.org');
+        vlcEmbed.setAttribute('width', '100%');
+        vlcEmbed.setAttribute('height', '100%');
+        vlcEmbed.setAttribute('id', 'vlc-player');
+        vlcEmbed.setAttribute('autoplay', settings.autoplay ? 'yes' : 'no');
+        vlcEmbed.setAttribute('loop', 'no');
+        vlcEmbed.setAttribute('volume', String(Math.round(settings.volume * 100)));
+        vlcEmbed.setAttribute('mute', settings.muted ? 'yes' : 'no');
+        vlcEmbed.setAttribute('target', channel.url);
+        
+        // Enhanced VLC parameters for better IPTV support
+        vlcEmbed.setAttribute('toolbar', 'false');
+        vlcEmbed.setAttribute('text', channel.name);
+        vlcEmbed.setAttribute('bgcolor', '#000000');
+        vlcEmbed.setAttribute('windowless', 'true');
+        
+        // Network caching for IPTV streams
+        vlcEmbed.setAttribute('network-caching', '1000');
+        vlcEmbed.setAttribute('live-caching', '300');
+        
+        // Add to container
+        if (containerRef.current) {
+          containerRef.current.appendChild(vlcEmbed);
+        }
 
-    } catch (e) {
-      console.error('VLC initialization error:', e);
-      setError('Failed to load VLC player');
-      setIsLoading(false);
-    }
+        vlcRef.current = vlcEmbed;
+
+        // Set up VLC event listeners with timeout
+        const setupTimeout = setTimeout(() => {
+          try {
+            if (vlcRef.current && vlcRef.current.playlist) {
+              // Clear any existing playlist
+              vlcRef.current.playlist.clear();
+              
+              // Add the stream URL
+              vlcRef.current.playlist.add(channel.url, channel.name);
+              
+              if (settings.autoplay) {
+                vlcRef.current.playlist.play();
+                setIsPlaying(true);
+              }
+              
+              setIsLoading(false);
+
+              // Monitor playback state
+              const monitorInterval = setInterval(() => {
+                try {
+                  if (vlcRef.current && vlcRef.current.input && vlcRef.current.playlist) {
+                    const inputState = vlcRef.current.input.state;
+                    const isCurrentlyPlaying = vlcRef.current.playlist.isPlaying;
+                    
+                    setCurrentTime(vlcRef.current.input.time / 1000);
+                    setDuration(vlcRef.current.input.length / 1000);
+                    setIsPlaying(isCurrentlyPlaying);
+                    
+                    // Check for errors
+                    if (inputState === 6) { // VLC error state
+                      throw new Error('VLC playback error');
+                    }
+                  }
+                } catch (e) {
+                  console.warn('VLC monitoring error:', e);
+                  // Don't clear interval on minor errors
+                }
+              }, 1000);
+
+              return () => clearInterval(monitorInterval);
+            } else {
+              throw new Error('VLC plugin not properly initialized');
+            }
+          } catch (e) {
+            console.error('VLC setup error:', e);
+            setError('Failed to initialize VLC player - Stream may be incompatible');
+            setIsLoading(false);
+          }
+        }, 2000); // Give VLC more time to initialize
+
+        return () => clearTimeout(setupTimeout);
+
+      } catch (e) {
+        console.error('VLC initialization error:', e);
+        setError('Failed to load VLC player');
+        setIsLoading(false);
+      }
+    };
+
+    const cleanup = initializeVLC();
 
     return () => {
+      if (cleanup) cleanup();
       if (containerRef.current) {
         containerRef.current.innerHTML = '';
       }
@@ -157,6 +201,7 @@ const VLCPlayer: React.FC<VLCPlayerProps> = ({ channel, onChannelEnd }) => {
       }
     } catch (e) {
       console.error('VLC play/pause error:', e);
+      setError('Playback control failed');
     }
   };
 
@@ -200,9 +245,47 @@ const VLCPlayer: React.FC<VLCPlayerProps> = ({ channel, onChannelEnd }) => {
       if (vlcRef.current && vlcRef.current.video) {
         vlcRef.current.video.toggleFullscreen();
         setSettings(prev => ({ ...prev, fullscreen: !prev.fullscreen }));
+      } else {
+        // Fallback to container fullscreen
+        if (!document.fullscreenElement) {
+          containerRef.current?.requestFullscreen();
+          setSettings(prev => ({ ...prev, fullscreen: true }));
+        } else {
+          document.exitFullscreen();
+          setSettings(prev => ({ ...prev, fullscreen: false }));
+        }
       }
     } catch (e) {
       console.error('VLC fullscreen error:', e);
+    }
+  };
+
+  const retryConnection = () => {
+    if (retryCount < 3) {
+      setRetryCount(prev => prev + 1);
+      setError(null);
+      setIsLoading(true);
+      
+      // Force re-initialization
+      if (containerRef.current) {
+        containerRef.current.innerHTML = '';
+      }
+      
+      // Trigger re-initialization by updating a dependency
+      setTimeout(() => {
+        if (vlcRef.current && vlcRef.current.playlist) {
+          try {
+            vlcRef.current.playlist.clear();
+            vlcRef.current.playlist.add(channel?.url, channel?.name);
+            vlcRef.current.playlist.play();
+          } catch (e) {
+            setError('Retry failed - Stream may be offline');
+            setIsLoading(false);
+          }
+        }
+      }, 1000);
+    } else {
+      setError('Maximum retry attempts reached - Stream may be offline');
     }
   };
 
@@ -225,6 +308,7 @@ const VLCPlayer: React.FC<VLCPlayerProps> = ({ channel, onChannelEnd }) => {
         <div className="text-center text-gray-400">
           <Play className="w-16 h-16 mx-auto mb-4 opacity-50" />
           <p className="text-lg">Select a channel to start streaming</p>
+          <p className="text-sm mt-2">VLC Player for IPTV Streams</p>
         </div>
       </div>
     );
@@ -239,7 +323,7 @@ const VLCPlayer: React.FC<VLCPlayerProps> = ({ channel, onChannelEnd }) => {
           </div>
           <h3 className="text-xl font-semibold mb-3">VLC Plugin Required</h3>
           <p className="text-gray-300 mb-6">
-            To use VLC player for M3U8 streams, please install the VLC Web Plugin.
+            VLC Player is the recommended engine for IPTV streams. Please install the VLC Web Plugin for the best experience.
           </p>
           <div className="space-y-4">
             <a
@@ -251,8 +335,18 @@ const VLCPlayer: React.FC<VLCPlayerProps> = ({ channel, onChannelEnd }) => {
               <Download className="w-5 h-5" />
               <span>Download VLC</span>
             </a>
-            <div className="text-sm text-gray-400">
-              <p>After installing VLC, restart your browser to enable the web plugin.</p>
+            <div className="text-sm text-gray-400 space-y-2">
+              <p className="font-medium">Installation Steps:</p>
+              <ol className="text-left space-y-1 list-decimal list-inside">
+                <li>Download and install VLC Media Player</li>
+                <li>Enable "Web Plugin" during installation</li>
+                <li>Restart your browser completely</li>
+                <li>Refresh this page</li>
+              </ol>
+              <div className="mt-4 p-3 bg-gray-800 rounded text-xs">
+                <p className="font-medium mb-1">Alternative:</p>
+                <p>Use the "Enhanced IPTV" player from the settings menu for HLS.js support without VLC.</p>
+              </div>
             </div>
           </div>
         </div>
@@ -269,9 +363,12 @@ const VLCPlayer: React.FC<VLCPlayerProps> = ({ channel, onChannelEnd }) => {
       {isLoading && !error && (
         <div className="absolute inset-0 bg-black bg-opacity-75 flex items-center justify-center">
           <div className="text-center text-white">
-            <div className="animate-spin w-8 h-8 border-2 border-purple-500 border-t-transparent rounded-full mx-auto mb-4"></div>
-            <p>Loading VLC Player...</p>
-            <p className="text-sm text-gray-400 mt-2">Initializing stream playback</p>
+            <div className="animate-spin w-8 h-8 border-2 border-orange-500 border-t-transparent rounded-full mx-auto mb-4"></div>
+            <p className="text-lg">Loading VLC Player...</p>
+            <p className="text-sm text-gray-400 mt-2">Initializing IPTV stream playback</p>
+            {retryCount > 0 && (
+              <p className="text-xs text-yellow-400 mt-2">Retry attempt {retryCount}/3</p>
+            )}
           </div>
         </div>
       )}
@@ -286,14 +383,27 @@ const VLCPlayer: React.FC<VLCPlayerProps> = ({ channel, onChannelEnd }) => {
             <h3 className="text-xl font-semibold mb-3">VLC Player Error</h3>
             <p className="text-gray-300 mb-6">{error}</p>
             
-            <div className="text-sm text-gray-400 space-y-2">
-              <p className="font-medium">Troubleshooting:</p>
-              <ul className="text-left space-y-1">
-                <li>• Ensure VLC is properly installed</li>
-                <li>• Check if the web plugin is enabled</li>
-                <li>• Try restarting your browser</li>
-                <li>• Verify the stream URL is accessible</li>
-              </ul>
+            <div className="space-y-4">
+              {retryCount < 3 && (
+                <button
+                  onClick={retryConnection}
+                  className="flex items-center justify-center space-x-2 bg-orange-600 hover:bg-orange-700 text-white px-6 py-3 rounded-lg transition-colors duration-200 mx-auto"
+                >
+                  <RefreshCw className="w-5 h-5" />
+                  <span>Retry Connection</span>
+                </button>
+              )}
+              
+              <div className="text-sm text-gray-400 space-y-2">
+                <p className="font-medium">Troubleshooting:</p>
+                <ul className="text-left space-y-1">
+                  <li>• Ensure VLC is properly installed with web plugin</li>
+                  <li>• Check if the stream URL is accessible</li>
+                  <li>• Try restarting your browser</li>
+                  <li>• Verify the stream is currently live</li>
+                  <li>• Use "Enhanced IPTV" player as alternative</li>
+                </ul>
+              </div>
             </div>
           </div>
         </div>
@@ -302,9 +412,14 @@ const VLCPlayer: React.FC<VLCPlayerProps> = ({ channel, onChannelEnd }) => {
       {/* Stream Info */}
       <div className="absolute top-4 left-4 bg-black bg-opacity-75 rounded-lg px-3 py-2 text-white text-sm">
         <div className="flex items-center space-x-2">
-          <div className={`w-2 h-2 rounded-full ${error ? 'bg-red-500' : isLoading ? 'bg-yellow-500' : 'bg-orange-500'}`}></div>
+          <div className={`w-2 h-2 rounded-full ${
+            error ? 'bg-red-500' : 
+            isLoading ? 'bg-yellow-500 animate-pulse' : 
+            isPlaying ? 'bg-orange-500 animate-pulse' : 'bg-gray-500'
+          }`}></div>
           <span>VLC</span>
           {duration > 0 && <span className="text-gray-300">• {formatTime(duration)}</span>}
+          {retryCount > 0 && <span className="text-yellow-400">• Retry {retryCount}</span>}
         </div>
       </div>
 
@@ -379,10 +494,31 @@ const VLCPlayer: React.FC<VLCPlayerProps> = ({ channel, onChannelEnd }) => {
                     className="w-20 h-1 bg-gray-600 rounded-lg appearance-none cursor-pointer slider"
                   />
                 </div>
+
+                {/* Connection Status */}
+                <div className="flex items-center space-x-1 text-xs">
+                  <div className={`w-3 h-3 rounded-full ${
+                    error ? 'bg-red-500' :
+                    isLoading ? 'bg-yellow-500 animate-pulse' :
+                    isPlaying ? 'bg-green-500' : 'bg-gray-500'
+                  }`}></div>
+                  <span className={
+                    error ? 'text-red-400' :
+                    isLoading ? 'text-yellow-400' :
+                    isPlaying ? 'text-green-400' : 'text-gray-400'
+                  }>
+                    {error ? 'Error' : isLoading ? 'Connecting' : isPlaying ? 'Live' : 'Stopped'}
+                  </span>
+                </div>
               </div>
 
               {/* Right Controls */}
               <div className="flex items-center space-x-4">
+                {retryCount < 3 && error && (
+                  <button onClick={retryConnection} className="hover:text-orange-400 transition-colors">
+                    <RefreshCw className="w-5 h-5" />
+                  </button>
+                )}
                 <button className="hover:text-orange-400 transition-colors">
                   <Settings className="w-5 h-5" />
                 </button>
