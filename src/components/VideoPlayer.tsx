@@ -1,5 +1,5 @@
 import React, { useRef, useState, useEffect } from 'react';
-import { Play, Pause, Volume2, VolumeX, Maximize, Minimize, Settings, PictureInPicture2 } from 'lucide-react';
+import { Play, Pause, Volume2, VolumeX, Maximize, Minimize, Settings, PictureInPicture2, RefreshCw, AlertCircle } from 'lucide-react';
 import { useHLS } from '../hooks/useHLS';
 import { Channel, PlayerSettings } from '../types';
 
@@ -20,7 +20,7 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({ channel, onChannelEnd }) => {
     autoplay: true
   });
 
-  const { status, getQualityLevels, changeQuality } = useHLS(
+  const { status, getQualityLevels, changeQuality, retry } = useHLS(
     channel?.url || '', 
     videoRef
   );
@@ -136,13 +136,33 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({ channel, onChannelEnd }) => {
 
       {/* Error Overlay */}
       {status.error && (
-        <div className="absolute inset-0 bg-black bg-opacity-75 flex items-center justify-center">
-          <div className="text-center text-white">
-            <div className="w-16 h-16 bg-red-500 rounded-full flex items-center justify-center mx-auto mb-4">
-              <VolumeX className="w-8 h-8" />
+        <div className="absolute inset-0 bg-black bg-opacity-90 flex items-center justify-center p-6">
+          <div className="text-center text-white max-w-md">
+            <div className="w-16 h-16 bg-red-500 rounded-full flex items-center justify-center mx-auto mb-6">
+              <AlertCircle className="w-8 h-8" />
             </div>
-            <p className="text-lg mb-2">Stream Error</p>
-            <p className="text-sm text-gray-400">{status.error}</p>
+            <h3 className="text-xl font-semibold mb-3">Stream Error</h3>
+            <p className="text-gray-300 mb-6">{status.error}</p>
+            
+            <div className="space-y-4">
+              <button
+                onClick={retry}
+                className="flex items-center justify-center space-x-2 bg-purple-600 hover:bg-purple-700 text-white px-6 py-3 rounded-lg transition-colors duration-200 mx-auto"
+              >
+                <RefreshCw className="w-5 h-5" />
+                <span>Retry Loading</span>
+              </button>
+              
+              <div className="text-sm text-gray-400 space-y-2">
+                <p className="font-medium">Troubleshooting tips:</p>
+                <ul className="text-left space-y-1">
+                  <li>• Check your internet connection</li>
+                  <li>• Try refreshing the page</li>
+                  <li>• The stream may be temporarily unavailable</li>
+                  <li>• Try selecting a different channel</li>
+                </ul>
+              </div>
+            </div>
           </div>
         </div>
       )}
