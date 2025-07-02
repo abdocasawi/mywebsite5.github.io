@@ -24,3 +24,13 @@ export interface PlayerSettings {
   pictureInPicture: boolean;
   autoplay: boolean;
 }
+
+export interface StreamInfo {
+  protocol: string;
+  codec: string;
+  resolution: string;
+  bitrate: number;
+  fps: number;
+  type: string;
+  url: string;
+}

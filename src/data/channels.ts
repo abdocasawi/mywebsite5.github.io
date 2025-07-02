@@ -18,7 +18,7 @@ export const sampleChannels: Channel[] = [
     url: 'https://live-hls-apps-ajm-fa.getaj.net/AJM/index.m3u8',
     category: 'NEWS',
     country: 'arab',
-    language: 'ARABICh',
+    language: 'ARABIC',
     description: 'News channels'
   },
   {
@@ -171,7 +171,7 @@ export const sampleChannels: Channel[] = [
     url: 'https://dminnvllta.cdn.mgmlcdn.com/dubaione/smil:dubaione.stream.smil/chunklist.m3u8',
     category: 'ARABIC CHANNELS',
     country: 'arab',
-    language: 'ARABICh',
+    language: 'ARABIC',
     description: 'ARABIC channels'
   },
   {
@@ -210,24 +210,60 @@ export const sampleChannels: Channel[] = [
     language: 'ARABIC',
     description: 'MOVIES stream',
   },
-  // VLC-optimized M3U8 test channels
+  // Enhanced IPTV test channels with various formats
   {
     id: '24',
-    name: 'Big Buck Bunny (Test)',
+    name: 'Big Buck Bunny (HLS)',
     url: 'https://test-streams.mux.dev/x36xhzz/x36xhzz.m3u8',
     category: 'TEST',
     country: 'Global',
     language: 'English',
-    description: 'Test M3U8 stream for VLC player compatibility'
+    description: 'Test HLS stream for compatibility testing'
   },
   {
     id: '25',
-    name: 'Sintel (Test)',
+    name: 'Sintel (Multi-bitrate)',
     url: 'https://bitdash-a.akamaihd.net/content/sintel/hls/playlist.m3u8',
     category: 'TEST',
     country: 'Global',
     language: 'English',
-    description: 'High quality test stream for VLC player'
+    description: 'High quality adaptive bitrate test stream'
+  },
+  {
+    id: '26',
+    name: 'Tears of Steel (DASH)',
+    url: 'https://dash.akamaized.net/akamai/bbb_30fps/bbb_30fps.mpd',
+    category: 'TEST',
+    country: 'Global',
+    language: 'English',
+    description: 'DASH format test stream'
+  },
+  {
+    id: '27',
+    name: 'Elephant Dream (Direct MP4)',
+    url: 'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ElephantsDream.mp4',
+    category: 'TEST',
+    country: 'Global',
+    language: 'English',
+    description: 'Direct MP4 video file for native player testing'
+  },
+  {
+    id: '28',
+    name: 'NASA Live (24/7)',
+    url: 'https://ntv1.akamaized.net/hls/live/2014075/NASA-NTV1-HLS/master.m3u8',
+    category: 'LIVE',
+    country: 'USA',
+    language: 'English',
+    description: '24/7 NASA live stream'
+  },
+  {
+    id: '29',
+    name: 'Red Bull TV',
+    url: 'https://rbmn-live.akamaized.net/hls/live/590964/BoRB-AT/master.m3u8',
+    category: 'SPORTS',
+    country: 'Austria',
+    language: 'English',
+    description: 'Red Bull TV live stream'
   }
 ];
 
@@ -240,5 +276,7 @@ export const categories = [
   'Sports',
   'MOVIES',
   'ITALIA',
-  'TEST'
+  'TEST',
+  'LIVE',
+  'SPORTS'
 ];
