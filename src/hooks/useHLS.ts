@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef, useState, useCallback } from 'react';
 import Hls from 'hls.js';
 import { StreamStatus } from '../types';
 
@@ -11,10 +11,20 @@ export const useHLS = (url: string, videoRef: React.RefObject<HTMLVideoElement>)
     quality: 'auto'
   });
 
-  useEffect(() => {
+  const cleanup = useCallback(() => {
+    if (hlsRef.current) {
+      hlsRef.current.destroy();
+      hlsRef.current = null;
+    }
+  }, []);
+
+  const initializeHLS = useCallback(() => {
     if (!videoRef.current || !url) return;
 
     const video = videoRef.current;
+    
+    // Clean up any existing HLS instance
+    cleanup();
     
     setStatus(prev => ({ ...prev, isLoading: true, error: null }));
 
@@ -29,7 +39,10 @@ export const useHLS = (url: string, videoRef: React.RefObject<HTMLVideoElement>)
     if (Hls.isSupported()) {
       const hls = new Hls({
         enableWorker: true,
-        lowLatencyMode: false
+        lowLatencyMode: false,
+        maxLoadingDelay: 4,
+        maxBufferLength: 30,
+        maxMaxBufferLength: 600
       });
 
       hlsRef.current = hls;
@@ -47,14 +60,30 @@ export const useHLS = (url: string, videoRef: React.RefObject<HTMLVideoElement>)
       });
 
       hls.on(Hls.Events.ERROR, (event, data) => {
-        // Only log fatal errors to avoid console spam from non-fatal buffering issues
+        console.error('HLS Error:', { event, data });
+        
         if (data.fatal) {
-          console.error('HLS Fatal Error:', data);
+          let errorMessage = 'Stream failed to load';
+          
+          switch (data.type) {
+            case Hls.ErrorTypes.NETWORK_ERROR:
+              errorMessage = 'Network error - Check your internet connection';
+              break;
+            case Hls.ErrorTypes.MEDIA_ERROR:
+              errorMessage = 'Media error - Stream format not supported';
+              break;
+            case Hls.ErrorTypes.MUX_ERROR:
+              errorMessage = 'Stream parsing error';
+              break;
+            default:
+              errorMessage = data.details || 'Unknown stream error';
+          }
+          
           setStatus(prev => ({ 
             ...prev, 
             isLoading: false, 
             isLive: false,
-            error: data.details || 'Stream error'
+            error: errorMessage
           }));
         }
       });
@@ -75,14 +104,16 @@ export const useHLS = (url: string, videoRef: React.RefObject<HTMLVideoElement>)
         error: 'HLS not supported in this browser'
       }));
     }
+  }, [url, videoRef, cleanup]);
 
-    return () => {
-      if (hlsRef.current) {
-        hlsRef.current.destroy();
-        hlsRef.current = null;
-      }
-    };
-  }, [url, videoRef]);
+  useEffect(() => {
+    initializeHLS();
+    return cleanup;
+  }, [initializeHLS, cleanup]);
+
+  const retry = useCallback(() => {
+    initializeHLS();
+  }, [initializeHLS]);
 
   const changeQuality = (levelIndex: number) => {
     if (hlsRef.current) {
@@ -98,6 +129,7 @@ export const useHLS = (url: string, videoRef: React.RefObject<HTMLVideoElement>)
     status,
     changeQuality,
     getQualityLevels,
+    retry,
     hls: hlsRef.current
   };
 };
