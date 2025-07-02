@@ -1,5 +1,5 @@
 import React from 'react';
-import { Tv, Radio, Settings, User } from 'lucide-react';
+import { Tv, Radio, Settings, User, Star } from 'lucide-react';
 
 export const Header: React.FC = () => {
   return (
@@ -11,7 +11,13 @@ export const Header: React.FC = () => {
             <div className="w-8 h-8 bg-gradient-to-br from-purple-500 to-pink-500 rounded-lg flex items-center justify-center">
               <Radio className="w-5 h-5 text-white" />
             </div>
-            <h1 className="text-xl font-bold text-white">StreamHub</h1>
+            <div className="flex items-center space-x-2">
+              <h1 className="text-xl font-bold text-white">StreamHub</h1>
+              <div className="flex items-center space-x-1 bg-yellow-500 text-black px-2 py-1 rounded text-xs font-bold">
+                <Star className="w-3 h-3" />
+                <span>PRO</span>
+              </div>
+            </div>
           </div>
 
           {/* Navigation */}
@@ -32,6 +38,10 @@ export const Header: React.FC = () => {
 
           {/* User Actions */}
           <div className="flex items-center space-x-4">
+            <div className="hidden sm:flex items-center space-x-2 text-xs text-gray-400">
+              <span>Powered by</span>
+              <span className="text-yellow-400 font-semibold">JW Player</span>
+            </div>
             <button className="p-2 text-gray-400 hover:text-white transition-colors">
               <Settings className="w-5 h-5" />
             </button>

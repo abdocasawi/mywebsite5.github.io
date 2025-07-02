@@ -48,12 +48,12 @@ function App() {
                   
                   <div className="flex items-center space-x-2">
                     <div className={`w-3 h-3 rounded-full animate-pulse ${
-                      selectedChannel.url.includes('.m3u8') ? 'bg-red-500' : 'bg-blue-500'
+                      selectedChannel.url.includes('.m3u8') || selectedChannel.url.includes('.mpd') ? 'bg-red-500' : 'bg-blue-500'
                     }`}></div>
                     <span className={`font-medium ${
-                      selectedChannel.url.includes('.m3u8') ? 'text-red-400' : 'text-blue-400'
+                      selectedChannel.url.includes('.m3u8') || selectedChannel.url.includes('.mpd') ? 'text-red-400' : 'text-blue-400'
                     }`}>
-                      {selectedChannel.url.includes('.m3u8') ? 'LIVE' : 'VIDEO'}
+                      {selectedChannel.url.includes('.m3u8') || selectedChannel.url.includes('.mpd') ? 'LIVE' : 'VIDEO'}
                     </span>
                   </div>
                 </div>
@@ -75,26 +75,26 @@ function App() {
         <div className="mt-16 grid grid-cols-1 md:grid-cols-3 gap-8">
           <div className="bg-gray-900 rounded-xl p-6 text-center">
             <div className="w-12 h-12 bg-purple-600 rounded-lg flex items-center justify-center mx-auto mb-4">
-              <span className="text-white font-bold">HD</span>
+              <span className="text-white font-bold">JW</span>
             </div>
-            <h3 className="text-lg font-semibold text-white mb-2">High Quality</h3>
-            <p className="text-gray-400">Stream in crystal clear HD with adaptive bitrate streaming</p>
+            <h3 className="text-lg font-semibold text-white mb-2">JW Player Pro</h3>
+            <p className="text-gray-400">Professional streaming engine with adaptive bitrate and advanced codec support</p>
           </div>
           
           <div className="bg-gray-900 rounded-xl p-6 text-center">
             <div className="w-12 h-12 bg-purple-600 rounded-lg flex items-center justify-center mx-auto mb-4">
-              <span className="text-white font-bold">MKV</span>
+              <span className="text-white font-bold">ALL</span>
             </div>
-            <h3 className="text-lg font-semibold text-white mb-2">Multi-Format</h3>
-            <p className="text-gray-400">Support for MKV, MP4, and HLS streaming formats</p>
+            <h3 className="text-lg font-semibold text-white mb-2">All Formats</h3>
+            <p className="text-gray-400">Support for HLS, DASH, MP4, WebM, and all major IPTV streaming formats</p>
           </div>
           
           <div className="bg-gray-900 rounded-xl p-6 text-center">
             <div className="w-12 h-12 bg-purple-600 rounded-lg flex items-center justify-center mx-auto mb-4">
               <span className="text-white font-bold">∞</span>
             </div>
-            <h3 className="text-lg font-semibold text-white mb-2">Unlimited</h3>
-            <p className="text-gray-400">Access to hundreds of channels from around the world</p>
+            <h3 className="text-lg font-semibold text-white mb-2">Enterprise Grade</h3>
+            <p className="text-gray-400">Professional-grade streaming with advanced analytics and error handling</p>
           </div>
         </div>
       </main>
