@@ -1,5 +1,5 @@
 import React, { useRef, useState, useEffect } from 'react';
-import { Play, Pause, Volume2, VolumeX, Maximize, Minimize, Settings, PictureInPicture2, RefreshCw, AlertCircle, Zap, Signal, Monitor } from 'lucide-react';
+import { Play, Pause, Volume2, VolumeX, Maximize, Minimize, Settings, PictureInPicture2, RefreshCw, AlertCircle, Zap, Signal, Monitor, Wifi, WifiOff } from 'lucide-react';
 import { Channel, PlayerSettings } from '../types';
 
 // JW Player types
@@ -17,19 +17,24 @@ interface JWPlayerProps {
 const JWPlayer: React.FC<JWPlayerProps> = ({ channel, onChannelEnd }) => {
   const playerRef = useRef<HTMLDivElement>(null);
   const jwPlayerInstance = useRef<any>(null);
+  const bufferCheckInterval = useRef<NodeJS.Timeout | null>(null);
   const [isPlaying, setIsPlaying] = useState(false);
   const [showControls, setShowControls] = useState(true);
   const [isLoading, setIsLoading] = useState(false);
+  const [isBuffering, setIsBuffering] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [jwPlayerReady, setJwPlayerReady] = useState(false);
   const [currentTime, setCurrentTime] = useState(0);
   const [duration, setDuration] = useState(0);
   const [retryCount, setRetryCount] = useState(0);
+  const [bufferHealth, setBufferHealth] = useState(0);
+  const [connectionQuality, setConnectionQuality] = useState<'excellent' | 'good' | 'poor' | 'offline'>('offline');
   const [streamInfo, setStreamInfo] = useState({
     type: '',
     quality: '',
     bitrate: 0,
-    fps: 0
+    fps: 0,
+    bufferLength: 0
   });
   const [settings, setSettings] = useState<PlayerSettings>({
     volume: 1,
@@ -83,6 +88,66 @@ const JWPlayer: React.FC<JWPlayerProps> = ({ channel, onChannelEnd }) => {
     return 'hls';
   };
 
+  // Buffer monitoring
+  useEffect(() => {
+    if (jwPlayerInstance.current && isPlaying) {
+      bufferCheckInterval.current = setInterval(() => {
+        try {
+          const buffer = jwPlayerInstance.current.getBuffer();
+          const position = jwPlayerInstance.current.getPosition();
+          const bufferLength = buffer - position;
+          
+          setStreamInfo(prev => ({ ...prev, bufferLength }));
+          setBufferHealth(Math.min(100, (bufferLength / 10) * 100)); // 10 seconds = 100%
+          
+          // Update connection quality based on buffer health
+          if (bufferLength > 8) {
+            setConnectionQuality('excellent');
+          } else if (bufferLength > 5) {
+            setConnectionQuality('good');
+          } else if (bufferLength > 2) {
+            setConnectionQuality('poor');
+          } else {
+            setConnectionQuality('offline');
+          }
+          
+          // Auto-retry if buffer is critically low
+          if (bufferLength < 1 && isPlaying && !isBuffering) {
+            console.log('Buffer critically low, attempting recovery...');
+            setIsBuffering(true);
+            
+            // Try to recover by seeking slightly forward
+            setTimeout(() => {
+              if (jwPlayerInstance.current) {
+                try {
+                  const currentPos = jwPlayerInstance.current.getPosition();
+                  jwPlayerInstance.current.seek(currentPos + 0.1);
+                } catch (e) {
+                  console.error('Buffer recovery failed:', e);
+                }
+              }
+              setIsBuffering(false);
+            }, 2000);
+          }
+        } catch (e) {
+          console.error('Buffer monitoring error:', e);
+        }
+      }, 1000);
+    } else {
+      if (bufferCheckInterval.current) {
+        clearInterval(bufferCheckInterval.current);
+        bufferCheckInterval.current = null;
+      }
+    }
+
+    return () => {
+      if (bufferCheckInterval.current) {
+        clearInterval(bufferCheckInterval.current);
+        bufferCheckInterval.current = null;
+      }
+    };
+  }, [isPlaying, isBuffering]);
+
   // Initialize JW Player
   useEffect(() => {
     if (!jwPlayerReady || !channel || !playerRef.current) return;
@@ -90,6 +155,7 @@ const JWPlayer: React.FC<JWPlayerProps> = ({ channel, onChannelEnd }) => {
     setIsLoading(true);
     setError(null);
     setRetryCount(0);
+    setIsBuffering(false);
 
     const initializePlayer = () => {
       try {
@@ -101,7 +167,7 @@ const JWPlayer: React.FC<JWPlayerProps> = ({ channel, onChannelEnd }) => {
 
         const streamFormat = detectStreamFormat(channel.url);
         
-        // JW Player configuration
+        // Enhanced JW Player configuration for better buffering
         const playerConfig = {
           file: channel.url,
           title: channel.name,
@@ -119,9 +185,82 @@ const JWPlayer: React.FC<JWPlayerProps> = ({ channel, onChannelEnd }) => {
           stretching: 'uniform',
           preload: 'auto',
           
-          // Enhanced streaming configuration
+          // CRITICAL: Enhanced buffering and streaming configuration
           hlshtml5: true,
           androidhls: true,
+          
+          // Advanced buffering settings
+          buffer: {
+            // Increase buffer size for better stability
+            length: 30, // 30 seconds buffer
+            target: 10, // Target 10 seconds ahead
+            max: 60,    // Maximum 60 seconds buffer
+            
+            // Aggressive buffering for live streams
+            live: {
+              syncDuration: 2,     // Sync within 2 seconds of live edge
+              targetDuration: 8,   // Target 8 seconds behind live
+              maxDuration: 20      // Maximum 20 seconds behind live
+            }
+          },
+          
+          // Network optimization
+          networking: {
+            timeout: 15000,        // 15 second timeout
+            retries: 5,            // 5 retry attempts
+            retryDelay: 1000,      // 1 second between retries
+            
+            // Bandwidth adaptation
+            bandwidth: {
+              initial: 2000000,    // Start with 2Mbps assumption
+              minimum: 500000,     // Minimum 500kbps
+              maximum: 10000000    // Maximum 10Mbps
+            }
+          },
+          
+          // HLS specific optimizations
+          hls: {
+            withCredentials: false,
+            crossOrigin: 'anonymous',
+            
+            // Fragment loading
+            fragLoadingTimeOut: 20000,
+            fragLoadingMaxRetry: 6,
+            fragLoadingRetryDelay: 1000,
+            
+            // Manifest loading
+            manifestLoadingTimeOut: 10000,
+            manifestLoadingMaxRetry: 4,
+            manifestLoadingRetryDelay: 1000,
+            
+            // Level loading
+            levelLoadingTimeOut: 10000,
+            levelLoadingMaxRetry: 4,
+            levelLoadingRetryDelay: 1000,
+            
+            // Buffer management
+            maxBufferLength: 30,
+            maxMaxBufferLength: 600,
+            maxBufferSize: 60 * 1000 * 1000, // 60MB
+            maxBufferHole: 0.5,
+            
+            // Live streaming
+            liveSyncDurationCount: 3,
+            liveMaxLatencyDurationCount: 10,
+            liveDurationInfinity: true,
+            
+            // Quality switching
+            abrEwmaFastLive: 3.0,
+            abrEwmaSlowLive: 9.0,
+            abrEwmaFastVoD: 3.0,
+            abrEwmaSlowVoD: 9.0,
+            
+            // Error recovery
+            enableWorker: true,
+            enableSoftwareAES: true,
+            startFragPrefetch: true,
+            testBandwidth: true
+          },
           
           // Adaptive streaming
           levels: [
@@ -130,10 +269,6 @@ const JWPlayer: React.FC<JWPlayerProps> = ({ channel, onChannelEnd }) => {
               label: 'Auto'
             }
           ],
-          
-          // Live streaming optimizations
-          liveSyncDuration: 3,
-          liveBufferTarget: 10,
           
           // Error handling
           setupErrorHandling: true,
@@ -160,39 +295,61 @@ const JWPlayer: React.FC<JWPlayerProps> = ({ channel, onChannelEnd }) => {
           // Analytics
           analytics: {
             enabled: false
-          }
+          },
+          
+          // Additional performance settings
+          cast: {},
+          sharing: {},
+          related: { oncomplete: 'hide' },
+          advertising: { client: 'vast' }
         };
 
         // Create JW Player instance
         jwPlayerInstance.current = window.jwplayer(playerRef.current).setup(playerConfig);
 
-        // Event listeners
+        // Enhanced event listeners
         jwPlayerInstance.current.on('ready', () => {
           console.log('JW Player ready');
           setIsLoading(false);
           setStreamInfo(prev => ({ ...prev, type: streamFormat }));
+          setConnectionQuality('good');
         });
 
         jwPlayerInstance.current.on('play', () => {
           setIsPlaying(true);
           setError(null);
+          setIsBuffering(false);
+          setConnectionQuality('good');
         });
 
         jwPlayerInstance.current.on('pause', () => {
           setIsPlaying(false);
+          setIsBuffering(false);
         });
 
         jwPlayerInstance.current.on('buffer', () => {
-          setIsLoading(true);
+          setIsBuffering(true);
+          console.log('Buffering started...');
+        });
+
+        jwPlayerInstance.current.on('bufferChange', (event: any) => {
+          console.log('Buffer change:', event);
+          if (event.newstate) {
+            setIsBuffering(true);
+          } else {
+            setIsBuffering(false);
+          }
         });
 
         jwPlayerInstance.current.on('idle', () => {
           setIsLoading(false);
           setIsPlaying(false);
+          setIsBuffering(false);
         });
 
         jwPlayerInstance.current.on('complete', () => {
           setIsPlaying(false);
+          setIsBuffering(false);
           if (onChannelEnd) {
             onChannelEnd();
           }
@@ -202,22 +359,33 @@ const JWPlayer: React.FC<JWPlayerProps> = ({ channel, onChannelEnd }) => {
           console.error('JW Player error:', event);
           setIsLoading(false);
           setIsPlaying(false);
+          setIsBuffering(false);
+          setConnectionQuality('offline');
           
           let errorMessage = 'Stream playback failed';
           
           if (event.message) {
-            if (event.message.includes('network')) {
-              errorMessage = 'Network error - Check your connection';
-            } else if (event.message.includes('decode')) {
-              errorMessage = 'Stream format not supported';
-            } else if (event.message.includes('load')) {
-              errorMessage = 'Failed to load stream - URL may be invalid';
+            if (event.message.includes('network') || event.message.includes('timeout')) {
+              errorMessage = 'Network timeout - Check your connection or try again';
+            } else if (event.message.includes('decode') || event.message.includes('format')) {
+              errorMessage = 'Stream format not supported - Try different quality';
+            } else if (event.message.includes('load') || event.message.includes('404')) {
+              errorMessage = 'Stream not found - URL may be invalid or offline';
+            } else if (event.message.includes('cors') || event.message.includes('origin')) {
+              errorMessage = 'Access denied - Stream may require authentication';
             } else {
               errorMessage = event.message;
             }
           }
           
           setError(errorMessage);
+          
+          // Auto-retry for network errors
+          if (retryCount < 3 && (event.message?.includes('network') || event.message?.includes('timeout'))) {
+            setTimeout(() => {
+              retryConnection();
+            }, 3000);
+          }
         });
 
         jwPlayerInstance.current.on('time', (event: any) => {
@@ -259,10 +427,26 @@ const JWPlayer: React.FC<JWPlayerProps> = ({ channel, onChannelEnd }) => {
           }
         });
 
+        // Additional buffering events
+        jwPlayerInstance.current.on('bufferFull', () => {
+          console.log('Buffer full');
+          setIsBuffering(false);
+          setConnectionQuality('excellent');
+        });
+
+        jwPlayerInstance.current.on('seek', () => {
+          setIsBuffering(true);
+        });
+
+        jwPlayerInstance.current.on('seeked', () => {
+          setIsBuffering(false);
+        });
+
       } catch (e) {
         console.error('JW Player initialization error:', e);
         setError('Failed to initialize JW Player');
         setIsLoading(false);
+        setConnectionQuality('offline');
       }
     };
 
@@ -276,6 +460,10 @@ const JWPlayer: React.FC<JWPlayerProps> = ({ channel, onChannelEnd }) => {
         } catch (e) {
           console.error('Error removing JW Player:', e);
         }
+      }
+      if (bufferCheckInterval.current) {
+        clearInterval(bufferCheckInterval.current);
+        bufferCheckInterval.current = null;
       }
     };
   }, [jwPlayerReady, channel, settings.autoplay, settings.muted, settings.volume]);
@@ -362,26 +550,31 @@ const JWPlayer: React.FC<JWPlayerProps> = ({ channel, onChannelEnd }) => {
   };
 
   const retryConnection = () => {
-    if (retryCount < 3) {
+    if (retryCount < 5) { // Increased retry attempts
       setRetryCount(prev => prev + 1);
       setError(null);
       setIsLoading(true);
+      setIsBuffering(false);
       
-      // Force re-initialization
-      if (jwPlayerInstance.current) {
-        try {
-          jwPlayerInstance.current.load([{
-            file: channel?.url,
-            title: channel?.name
-          }]);
-          jwPlayerInstance.current.play();
-        } catch (e) {
-          setError('Retry failed - Stream may be offline');
-          setIsLoading(false);
+      // Force re-initialization with delay
+      setTimeout(() => {
+        if (jwPlayerInstance.current) {
+          try {
+            jwPlayerInstance.current.load([{
+              file: channel?.url,
+              title: channel?.name
+            }]);
+            jwPlayerInstance.current.play();
+          } catch (e) {
+            setError('Retry failed - Stream may be offline');
+            setIsLoading(false);
+            setConnectionQuality('offline');
+          }
         }
-      }
+      }, 1000 * retryCount); // Progressive delay
     } else {
       setError('Maximum retry attempts reached - Stream may be offline');
+      setConnectionQuality('offline');
     }
   };
 
@@ -400,6 +593,15 @@ const JWPlayer: React.FC<JWPlayerProps> = ({ channel, onChannelEnd }) => {
       case 'dash': return 'text-blue-400';
       case 'mp4': return 'text-green-400';
       default: return 'text-gray-400';
+    }
+  };
+
+  const getConnectionIcon = () => {
+    switch (connectionQuality) {
+      case 'excellent': return <Wifi className="w-4 h-4 text-green-400" />;
+      case 'good': return <Wifi className="w-4 h-4 text-blue-400" />;
+      case 'poor': return <Wifi className="w-4 h-4 text-yellow-400" />;
+      case 'offline': return <WifiOff className="w-4 h-4 text-red-400" />;
     }
   };
 
@@ -445,15 +647,28 @@ const JWPlayer: React.FC<JWPlayerProps> = ({ channel, onChannelEnd }) => {
       {/* JW Player Container */}
       <div ref={playerRef} className="w-full h-full" />
 
-      {/* Loading Overlay */}
-      {isLoading && !error && (
+      {/* Loading/Buffering Overlay */}
+      {(isLoading || isBuffering) && !error && (
         <div className="absolute inset-0 bg-black bg-opacity-75 flex items-center justify-center">
           <div className="text-center text-white">
             <div className="animate-spin w-8 h-8 border-2 border-purple-500 border-t-transparent rounded-full mx-auto mb-4"></div>
-            <p className="text-lg">Loading stream...</p>
-            <p className="text-sm text-gray-400 mt-2">JW Player initializing {streamInfo.type.toUpperCase()} stream</p>
+            <p className="text-lg">{isBuffering ? 'Buffering...' : 'Loading stream...'}</p>
+            <p className="text-sm text-gray-400 mt-2">
+              {isBuffering ? 'Optimizing stream quality' : `JW Player initializing ${streamInfo.type.toUpperCase()} stream`}
+            </p>
             {retryCount > 0 && (
-              <p className="text-xs text-yellow-400 mt-2">Retry attempt {retryCount}/3</p>
+              <p className="text-xs text-yellow-400 mt-2">Retry attempt {retryCount}/5</p>
+            )}
+            {isBuffering && bufferHealth > 0 && (
+              <div className="mt-3">
+                <div className="w-32 bg-gray-700 rounded-full h-2 mx-auto">
+                  <div 
+                    className="bg-purple-500 h-2 rounded-full transition-all duration-300" 
+                    style={{ width: `${bufferHealth}%` }}
+                  ></div>
+                </div>
+                <p className="text-xs text-gray-400 mt-1">Buffer: {Math.round(bufferHealth)}%</p>
+              </div>
             )}
           </div>
         </div>
@@ -470,20 +685,20 @@ const JWPlayer: React.FC<JWPlayerProps> = ({ channel, onChannelEnd }) => {
             <p className="text-gray-300 mb-6">{error}</p>
             
             <div className="space-y-4">
-              {retryCount < 3 && (
+              {retryCount < 5 && (
                 <button
                   onClick={retryConnection}
                   className="flex items-center justify-center space-x-2 bg-purple-600 hover:bg-purple-700 text-white px-6 py-3 rounded-lg transition-colors duration-200 mx-auto"
                 >
                   <RefreshCw className="w-5 h-5" />
-                  <span>Retry Stream</span>
+                  <span>Retry Stream ({retryCount}/5)</span>
                 </button>
               )}
               
               <div className="text-sm text-gray-400 space-y-2">
                 <p className="font-medium">Troubleshooting:</p>
                 <ul className="text-left space-y-1">
-                  <li>• Check your internet connection</li>
+                  <li>• Check your internet connection speed</li>
                   <li>• Verify the stream URL is accessible</li>
                   <li>• Ensure the stream is currently live</li>
                   <li>• Try refreshing the page</li>
@@ -501,7 +716,7 @@ const JWPlayer: React.FC<JWPlayerProps> = ({ channel, onChannelEnd }) => {
           <div className="flex items-center space-x-2">
             <div className={`w-2 h-2 rounded-full ${
               error ? 'bg-red-500' : 
-              isLoading ? 'bg-yellow-500 animate-pulse' : 
+              isLoading || isBuffering ? 'bg-yellow-500 animate-pulse' : 
               isPlaying ? 'bg-green-500 animate-pulse' : 'bg-gray-500'
             }`}></div>
             <span className={getStreamTypeColor()}>
@@ -513,15 +728,24 @@ const JWPlayer: React.FC<JWPlayerProps> = ({ channel, onChannelEnd }) => {
           </div>
         </div>
 
+        {/* Buffer and Connection Info */}
+        <div className="bg-black bg-opacity-75 rounded-lg px-3 py-2 text-white text-xs">
+          <div className="flex items-center space-x-2">
+            {getConnectionIcon()}
+            <span>
+              {connectionQuality.charAt(0).toUpperCase() + connectionQuality.slice(1)}
+              {streamInfo.bufferLength > 0 && ` • ${streamInfo.bufferLength.toFixed(1)}s buffer`}
+              {streamInfo.bitrate > 0 && ` • ${Math.round(streamInfo.bitrate / 1000)}kbps`}
+            </span>
+          </div>
+        </div>
+
         {/* Additional Stream Info */}
-        {(streamInfo.bitrate > 0 || streamInfo.fps > 0) && (
+        {streamInfo.fps > 0 && (
           <div className="bg-black bg-opacity-75 rounded-lg px-3 py-2 text-white text-xs">
             <div className="flex items-center space-x-2">
               {getStreamTypeIcon()}
-              <span>
-                {streamInfo.bitrate > 0 && `${Math.round(streamInfo.bitrate / 1000)}kbps`}
-                {streamInfo.fps > 0 && ` • ${streamInfo.fps}fps`}
-              </span>
+              <span>{streamInfo.fps}fps</span>
             </div>
           </div>
         )}
@@ -544,7 +768,7 @@ const JWPlayer: React.FC<JWPlayerProps> = ({ channel, onChannelEnd }) => {
               disabled={isLoading}
               className="bg-white bg-opacity-20 hover:bg-opacity-30 rounded-full p-4 transition-all duration-200 backdrop-blur-sm disabled:opacity-50"
             >
-              {isLoading ? (
+              {isLoading || isBuffering ? (
                 <div className="animate-spin w-8 h-8 border-2 border-white border-t-transparent rounded-full"></div>
               ) : isPlaying ? (
                 <Pause className="w-8 h-8 text-white" />
@@ -599,26 +823,27 @@ const JWPlayer: React.FC<JWPlayerProps> = ({ channel, onChannelEnd }) => {
                   />
                 </div>
 
-                {/* Connection Status */}
+                {/* Enhanced Connection Status */}
                 <div className="flex items-center space-x-1 text-xs">
-                  <div className={`w-3 h-3 rounded-full ${
-                    error ? 'bg-red-500' :
-                    isLoading ? 'bg-yellow-500 animate-pulse' :
-                    isPlaying ? 'bg-green-500' : 'bg-gray-500'
-                  }`}></div>
+                  {getConnectionIcon()}
                   <span className={
-                    error ? 'text-red-400' :
-                    isLoading ? 'text-yellow-400' :
-                    isPlaying ? 'text-green-400' : 'text-gray-400'
+                    connectionQuality === 'excellent' ? 'text-green-400' :
+                    connectionQuality === 'good' ? 'text-blue-400' :
+                    connectionQuality === 'poor' ? 'text-yellow-400' : 'text-red-400'
                   }>
-                    {error ? 'Error' : isLoading ? 'Buffering' : isPlaying ? 'Live' : 'Ready'}
+                    {error ? 'Error' : 
+                     isLoading || isBuffering ? 'Buffering' : 
+                     isPlaying ? 'Live' : 'Ready'}
                   </span>
+                  {isBuffering && bufferHealth > 0 && (
+                    <span className="text-yellow-400">({Math.round(bufferHealth)}%)</span>
+                  )}
                 </div>
               </div>
 
               {/* Right Controls */}
               <div className="flex items-center space-x-4">
-                {retryCount < 3 && error && (
+                {retryCount < 5 && error && (
                   <button onClick={retryConnection} className="hover:text-purple-400 transition-colors">
                     <RefreshCw className="w-5 h-5" />
                   </button>
