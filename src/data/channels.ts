@@ -194,12 +194,12 @@ export const sampleChannels: Channel[] = [
   },
   {
     id: '22',
-    name: 'MBC DRAMA +',
-    url: 'https://mbcplusdrama-prod-dub-enc.edgenextcdn.net/out/v1/97ca0ce6fc6142f4b14c0a694af59eab/index.m3u8',
-    category: 'ARABIC CHANNELS',
-    country: 'SAUDIA',
-    language: 'ARABIC',
-    description: 'DRAMA stream',
+    name: 'RAI NEWS 24',
+    url: 'http://40b059a6.ucomist.net/iptv/M8LHCGEA3QT4XFG8LYR8RB3T/19094/index.m3u8',
+    category: 'ITALIAN CHANNEL',
+    country: 'ITALY',
+    language: 'ITALLIANO',
+    description: 'NEWS stream',
   },
   {
     id: '23',
@@ -220,4 +220,5 @@ export const categories = [
   'Entertainment',
   'Sports',
   'MOVIES',
+  'ITALIA'
 ];
