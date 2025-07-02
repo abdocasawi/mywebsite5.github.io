@@ -219,4 +219,5 @@ export const categories = [
   'All',
   'Entertainment',
   'Sports',
+  'MOVIES',
 ];
