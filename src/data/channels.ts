@@ -202,8 +202,8 @@ export const sampleChannels: Channel[] = [
     description: 'DRAMA stream',
   },
   {
-    id: 'MOVIES ACTION',
-    name: 'Sky News Arabia',
+    id: '23',
+    name: 'movies action',
     url: 'https://shls-live-enc.edgenextcdn.net/out/v1/46079e838e65490c8299f902a7731168/index.m3u8',
     category: 'MOVIES',
     country: 'INTERNET',
