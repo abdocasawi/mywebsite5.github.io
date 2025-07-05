@@ -6,15 +6,17 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>StreamHub - Live TV Streaming with VLC</title>
     <meta name="description" content="Stream live TV channels with VLC Player. Professional IPTV streaming with advanced codec support." />
-    <meta name="keywords" content="live tv, streaming, iptv, vlc player, hls, m3u8, video player, codec support" />
+    <meta name="keywords" content="live tv, streaming, iptv, vlc player, hls, m3u8, video player, codec support, chrome plugin" />
     
-    <!-- VLC Web Plugin Detection -->
+    <!-- Enhanced VLC Web Plugin Detection for Chrome -->
     <style>
       /* VLC Player Styling */
       embed[type="application/x-vlc-plugin"] {
         border-radius: 0.75rem !important;
         overflow: hidden !important;
         background: #000000 !important;
+        width: 100% !important;
+        height: 100% !important;
       }
       
       /* Custom VLC Controls Styling */
@@ -34,6 +36,15 @@
         background-color: #f97316 !important;
       }
 
+      /* Chrome-specific VLC plugin styles */
+      object[type="application/x-vlc-plugin"] {
+        border-radius: 0.75rem !important;
+        overflow: hidden !important;
+        background: #000000 !important;
+        width: 100% !important;
+        height: 100% !important;
+      }
+
       /* Fallback for browsers without VLC */
       .vlc-fallback {
         display: none;
@@ -43,53 +54,232 @@
       .no-vlc .vlc-fallback {
         display: block;
       }
+
+      /* Chrome plugin permission notice */
+      .chrome-plugin-notice {
+        position: fixed;
+        top: 20px;
+        right: 20px;
+        background: #f97316;
+        color: white;
+        padding: 12px 16px;
+        border-radius: 8px;
+        font-size: 14px;
+        z-index: 1000;
+        display: none;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+      }
+
+      .chrome-plugin-notice.show {
+        display: block;
+        animation: slideIn 0.3s ease-out;
+      }
+
+      @keyframes slideIn {
+        from { transform: translateX(100%); opacity: 0; }
+        to { transform: translateX(0); opacity: 1; }
+      }
     </style>
     
-    <!-- VLC Plugin Detection Script -->
+    <!-- Enhanced VLC Plugin Detection Script for Chrome -->
     <script>
-      // Detect VLC Plugin on page load
+      // Enhanced VLC Plugin Detection for Chrome and other browsers
       window.addEventListener('DOMContentLoaded', function() {
-        var hasVLC = false;
+        let hasVLC = false;
+        let browserInfo = {
+          name: 'Unknown',
+          version: '',
+          supportsNPAPI: false
+        };
+
+        // Detect browser
+        const userAgent = navigator.userAgent;
+        if (userAgent.includes('Chrome')) {
+          browserInfo.name = 'Chrome';
+          const chromeMatch = userAgent.match(/Chrome\/(\d+)/);
+          browserInfo.version = chromeMatch ? chromeMatch[1] : '';
+          browserInfo.supportsNPAPI = parseInt(browserInfo.version) < 45;
+        } else if (userAgent.includes('Firefox')) {
+          browserInfo.name = 'Firefox';
+          const firefoxMatch = userAgent.match(/Firefox\/(\d+)/);
+          browserInfo.version = firefoxMatch ? firefoxMatch[1] : '';
+          browserInfo.supportsNPAPI = parseInt(browserInfo.version) < 52;
+        } else if (userAgent.includes('Edg')) {
+          browserInfo.name = 'Edge';
+          browserInfo.supportsNPAPI = false;
+        } else if (userAgent.includes('Safari') && !userAgent.includes('Chrome')) {
+          browserInfo.name = 'Safari';
+          browserInfo.supportsNPAPI = false;
+        }
+
+        // Store browser info globally
+        window.browserInfo = browserInfo;
         
         try {
-          // Check for VLC plugin in various ways
-          hasVLC = !!(
-            navigator.plugins['VLC Web Plugin'] ||
-            navigator.plugins['VLC Multimedia Plugin'] ||
-            navigator.mimeTypes['application/x-vlc-plugin'] ||
-            window.VLCPlugin ||
-            // Check for ActiveX on IE/Edge
-            window.ActiveXObject
-          );
-          
-          // Additional check for VLC plugin
+          // Method 1: Check navigator.plugins (Chrome/Firefox)
+          if (navigator.plugins && navigator.plugins.length > 0) {
+            for (let i = 0; i < navigator.plugins.length; i++) {
+              const plugin = navigator.plugins[i];
+              if (plugin.name && (
+                plugin.name.toLowerCase().includes('vlc') ||
+                plugin.name.toLowerCase().includes('videolan')
+              )) {
+                hasVLC = true;
+                console.log('VLC Plugin detected via navigator.plugins:', plugin.name);
+                break;
+              }
+            }
+          }
+
+          // Method 2: Check navigator.mimeTypes
+          if (!hasVLC && navigator.mimeTypes) {
+            const vlcMimeTypes = [
+              'application/x-vlc-plugin',
+              'video/x-vlc-plugin',
+              'application/vlc',
+              'video/vlc'
+            ];
+            
+            for (const mimeType of vlcMimeTypes) {
+              if (navigator.mimeTypes[mimeType] && navigator.mimeTypes[mimeType].enabledPlugin) {
+                hasVLC = true;
+                console.log('VLC Plugin detected via mimeTypes:', mimeType);
+                break;
+              }
+            }
+          }
+
+          // Method 3: ActiveX for IE/Edge Legacy
+          if (!hasVLC && window.ActiveXObject) {
+            try {
+              const vlcActiveX = new ActiveXObject('VideoLAN.VLCPlugin.2');
+              if (vlcActiveX) {
+                hasVLC = true;
+                console.log('VLC Plugin detected via ActiveX');
+              }
+            } catch (e) {
+              // ActiveX not available
+            }
+          }
+
+          // Method 4: Test embed element creation (Chrome-specific)
           if (!hasVLC) {
             try {
-              var testEmbed = document.createElement('embed');
+              const testEmbed = document.createElement('embed');
               testEmbed.setAttribute('type', 'application/x-vlc-plugin');
+              testEmbed.setAttribute('hidden', 'true');
               testEmbed.style.display = 'none';
+              testEmbed.style.width = '1px';
+              testEmbed.style.height = '1px';
+              testEmbed.style.position = 'absolute';
+              testEmbed.style.left = '-9999px';
+              
               document.body.appendChild(testEmbed);
               
-              setTimeout(function() {
-                hasVLC = !!(testEmbed.playlist || testEmbed.audio || testEmbed.video);
-                document.body.removeChild(testEmbed);
-                
-                if (!hasVLC) {
+              // Give Chrome time to load the plugin
+              setTimeout(() => {
+                try {
+                  // Check if VLC methods are available
+                  const hasVLCMethods = !!(
+                    testEmbed.playlist ||
+                    testEmbed.audio ||
+                    testEmbed.video ||
+                    testEmbed.VersionInfo ||
+                    typeof testEmbed.playlist !== 'undefined'
+                  );
+                  
+                  if (hasVLCMethods) {
+                    hasVLC = true;
+                    console.log('VLC Plugin detected via embed test');
+                  }
+                  
+                  document.body.removeChild(testEmbed);
+                  
+                  if (!hasVLC) {
+                    document.body.classList.add('no-vlc');
+                    
+                    // Show Chrome-specific notice if it's Chrome
+                    if (browserInfo.name === 'Chrome' && !browserInfo.supportsNPAPI) {
+                      showChromePluginNotice();
+                    }
+                  }
+                } catch (e) {
+                  document.body.removeChild(testEmbed);
                   document.body.classList.add('no-vlc');
+                  console.log('VLC Plugin test failed:', e);
                 }
-              }, 100);
+              }, 1000);
+              
+              return; // Exit early for async test
             } catch (e) {
-              document.body.classList.add('no-vlc');
+              console.log('VLC Plugin embed test failed:', e);
             }
           }
         } catch (e) {
-          document.body.classList.add('no-vlc');
+          console.log('VLC Plugin detection error:', e);
         }
         
         if (!hasVLC) {
           document.body.classList.add('no-vlc');
+          
+          // Show browser-specific notices
+          if (browserInfo.name === 'Chrome') {
+            showChromePluginNotice();
+          }
+        } else {
+          console.log('VLC Plugin is available');
+        }
+
+        // Function to show Chrome plugin notice
+        function showChromePluginNotice() {
+          const notice = document.createElement('div');
+          notice.className = 'chrome-plugin-notice';
+          notice.innerHTML = `
+            <div style="display: flex; align-items: center; gap: 8px;">
+              <span>🔌</span>
+              <span>Chrome may require plugin permissions for VLC</span>
+              <button onclick="this.parentElement.parentElement.remove()" style="background: none; border: none; color: white; font-size: 18px; cursor: pointer; margin-left: 8px;">×</button>
+            </div>
+          `;
+          document.body.appendChild(notice);
+          
+          setTimeout(() => {
+            notice.classList.add('show');
+          }, 500);
+          
+          // Auto-hide after 10 seconds
+          setTimeout(() => {
+            if (notice.parentElement) {
+              notice.remove();
+            }
+          }, 10000);
         }
       });
+
+      // Additional Chrome-specific VLC detection on page interaction
+      document.addEventListener('click', function() {
+        if (document.body.classList.contains('no-vlc') && window.browserInfo?.name === 'Chrome') {
+          // Re-test VLC availability after user interaction (Chrome may load plugins on demand)
+          setTimeout(() => {
+            try {
+              const testEmbed = document.createElement('embed');
+              testEmbed.setAttribute('type', 'application/x-vlc-plugin');
+              testEmbed.style.display = 'none';
+              document.body.appendChild(testEmbed);
+              
+              setTimeout(() => {
+                if (testEmbed.playlist || testEmbed.audio || testEmbed.video) {
+                  document.body.classList.remove('no-vlc');
+                  console.log('VLC Plugin became available after user interaction');
+                }
+                document.body.removeChild(testEmbed);
+              }, 500);
+            } catch (e) {
+              // Test failed
+            }
+          }, 100);
+        }
+      }, { once: true });
     </script>
   </head>
   <body>

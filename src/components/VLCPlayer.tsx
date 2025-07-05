@@ -1,5 +1,5 @@
 import React, { useRef, useState, useEffect } from 'react';
-import { Play, Pause, Volume2, VolumeX, Maximize, Minimize, Settings, PictureInPicture2, AlertCircle, Download, RefreshCw } from 'lucide-react';
+import { Play, Pause, Volume2, VolumeX, Maximize, Minimize, Settings, PictureInPicture2, AlertCircle, Download, RefreshCw, Chrome, Monitor, Globe } from 'lucide-react';
 import { Channel, PlayerSettings } from '../types';
 
 interface VLCPlayerProps {
@@ -15,6 +15,7 @@ const VLCPlayer: React.FC<VLCPlayerProps> = ({ channel, onChannelEnd }) => {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [vlcAvailable, setVlcAvailable] = useState(false);
+  const [browserInfo, setBrowserInfo] = useState({ name: '', version: '', supportsNPAPI: false });
   const [currentTime, setCurrentTime] = useState(0);
   const [duration, setDuration] = useState(0);
   const [retryCount, setRetryCount] = useState(0);
@@ -26,36 +27,158 @@ const VLCPlayer: React.FC<VLCPlayerProps> = ({ channel, onChannelEnd }) => {
     autoplay: true
   });
 
-  // Check if VLC plugin is available
+  // Detect browser and VLC plugin compatibility
+  useEffect(() => {
+    const detectBrowser = () => {
+      const userAgent = navigator.userAgent;
+      let browserName = 'Unknown';
+      let browserVersion = '';
+      let supportsNPAPI = false;
+
+      // Chrome detection
+      if (userAgent.includes('Chrome')) {
+        browserName = 'Chrome';
+        const chromeMatch = userAgent.match(/Chrome\/(\d+)/);
+        browserVersion = chromeMatch ? chromeMatch[1] : '';
+        // Chrome dropped NPAPI support in version 45 (2015)
+        supportsNPAPI = parseInt(browserVersion) < 45;
+      }
+      // Firefox detection
+      else if (userAgent.includes('Firefox')) {
+        browserName = 'Firefox';
+        const firefoxMatch = userAgent.match(/Firefox\/(\d+)/);
+        browserVersion = firefoxMatch ? firefoxMatch[1] : '';
+        // Firefox dropped NPAPI support in version 52 (2017)
+        supportsNPAPI = parseInt(browserVersion) < 52;
+      }
+      // Edge detection
+      else if (userAgent.includes('Edg')) {
+        browserName = 'Edge';
+        const edgeMatch = userAgent.match(/Edg\/(\d+)/);
+        browserVersion = edgeMatch ? edgeMatch[1] : '';
+        supportsNPAPI = false; // Edge never supported NPAPI
+      }
+      // Safari detection
+      else if (userAgent.includes('Safari') && !userAgent.includes('Chrome')) {
+        browserName = 'Safari';
+        const safariMatch = userAgent.match(/Version\/(\d+)/);
+        browserVersion = safariMatch ? safariMatch[1] : '';
+        supportsNPAPI = false; // Safari dropped NPAPI support
+      }
+
+      setBrowserInfo({ name: browserName, version: browserVersion, supportsNPAPI });
+    };
+
+    detectBrowser();
+  }, []);
+
+  // Enhanced VLC plugin detection for Chrome and other browsers
   useEffect(() => {
     const checkVLCPlugin = () => {
       try {
-        // Check for VLC plugin in various ways
-        const hasVLCPlugin = !!(
-          navigator.plugins['VLC Web Plugin'] ||
-          navigator.plugins['VLC Multimedia Plugin'] ||
-          navigator.mimeTypes['application/x-vlc-plugin'] ||
-          (window as any).VLCPlugin ||
-          // Check for VLC ActiveX on IE/Edge
-          (window as any).ActiveXObject
-        );
+        let hasVLCPlugin = false;
+
+        // Method 1: Check navigator.plugins (works in older browsers)
+        if (navigator.plugins && navigator.plugins.length > 0) {
+          for (let i = 0; i < navigator.plugins.length; i++) {
+            const plugin = navigator.plugins[i];
+            if (plugin.name && (
+              plugin.name.toLowerCase().includes('vlc') ||
+              plugin.name.toLowerCase().includes('videolan')
+            )) {
+              hasVLCPlugin = true;
+              break;
+            }
+          }
+        }
+
+        // Method 2: Check navigator.mimeTypes
+        if (!hasVLCPlugin && navigator.mimeTypes) {
+          const vlcMimeTypes = [
+            'application/x-vlc-plugin',
+            'video/x-vlc-plugin',
+            'application/vlc',
+            'video/vlc'
+          ];
+          
+          for (const mimeType of vlcMimeTypes) {
+            if (navigator.mimeTypes[mimeType]) {
+              hasVLCPlugin = true;
+              break;
+            }
+          }
+        }
+
+        // Method 3: Try to create VLC object (ActiveX for IE/Edge)
+        if (!hasVLCPlugin) {
+          try {
+            if ((window as any).ActiveXObject) {
+              const vlcActiveX = new (window as any).ActiveXObject('VideoLAN.VLCPlugin.2');
+              if (vlcActiveX) {
+                hasVLCPlugin = true;
+              }
+            }
+          } catch (e) {
+            // ActiveX not available or VLC not installed
+          }
+        }
+
+        // Method 4: Test embed element creation
+        if (!hasVLCPlugin) {
+          try {
+            const testEmbed = document.createElement('embed');
+            testEmbed.setAttribute('type', 'application/x-vlc-plugin');
+            testEmbed.style.display = 'none';
+            testEmbed.style.width = '1px';
+            testEmbed.style.height = '1px';
+            
+            document.body.appendChild(testEmbed);
+            
+            setTimeout(() => {
+              try {
+                // Check if VLC methods are available
+                hasVLCPlugin = !!(
+                  testEmbed.playlist ||
+                  testEmbed.audio ||
+                  testEmbed.video ||
+                  (testEmbed as any).VersionInfo
+                );
+                
+                document.body.removeChild(testEmbed);
+                
+                setVlcAvailable(hasVLCPlugin);
+                
+                if (!hasVLCPlugin) {
+                  setError('VLC Web Plugin not detected');
+                }
+              } catch (e) {
+                document.body.removeChild(testEmbed);
+                setVlcAvailable(false);
+                setError('VLC Web Plugin not available');
+              }
+            }, 500);
+            
+            return;
+          } catch (e) {
+            // Embed test failed
+          }
+        }
         
         setVlcAvailable(hasVLCPlugin);
         
-        // If VLC is not available, show installation prompt immediately
         if (!hasVLCPlugin) {
           setError('VLC Web Plugin not detected');
         }
       } catch (e) {
         setVlcAvailable(false);
-        setError('VLC Web Plugin not available');
+        setError('VLC Web Plugin detection failed');
       }
     };
 
     checkVLCPlugin();
   }, []);
 
-  // Initialize VLC player
+  // Initialize VLC player with enhanced Chrome support
   useEffect(() => {
     if (!channel || !vlcAvailable || !containerRef.current) return;
 
@@ -70,10 +193,11 @@ const VLCPlayer: React.FC<VLCPlayerProps> = ({ channel, onChannelEnd }) => {
           containerRef.current.innerHTML = '';
         }
 
-        // Create VLC embed element with enhanced parameters
+        // Create VLC embed element with Chrome-specific parameters
         const vlcEmbed = document.createElement('embed');
         vlcEmbed.setAttribute('type', 'application/x-vlc-plugin');
         vlcEmbed.setAttribute('pluginspage', 'http://www.videolan.org');
+        vlcEmbed.setAttribute('version', 'VideoLAN.VLCPlugin.2');
         vlcEmbed.setAttribute('width', '100%');
         vlcEmbed.setAttribute('height', '100%');
         vlcEmbed.setAttribute('id', 'vlc-player');
@@ -83,16 +207,29 @@ const VLCPlayer: React.FC<VLCPlayerProps> = ({ channel, onChannelEnd }) => {
         vlcEmbed.setAttribute('mute', settings.muted ? 'yes' : 'no');
         vlcEmbed.setAttribute('target', channel.url);
         
-        // Enhanced VLC parameters for better IPTV support
+        // Enhanced VLC parameters for better Chrome compatibility
         vlcEmbed.setAttribute('toolbar', 'false');
         vlcEmbed.setAttribute('text', channel.name);
         vlcEmbed.setAttribute('bgcolor', '#000000');
         vlcEmbed.setAttribute('windowless', 'true');
+        vlcEmbed.setAttribute('branding', 'false');
         
-        // Network caching for IPTV streams
+        // Chrome-specific optimizations
+        vlcEmbed.setAttribute('allowfullscreen', 'true');
+        vlcEmbed.setAttribute('allowscriptaccess', 'always');
+        vlcEmbed.setAttribute('wmode', 'transparent');
+        
+        // Network caching for IPTV streams (Chrome optimized)
         vlcEmbed.setAttribute('network-caching', '1000');
         vlcEmbed.setAttribute('live-caching', '300');
+        vlcEmbed.setAttribute('file-caching', '300');
+        vlcEmbed.setAttribute('http-caching', '1000');
         
+        // Additional Chrome compatibility parameters
+        vlcEmbed.setAttribute('http-reconnect', 'true');
+        vlcEmbed.setAttribute('http-continuous', 'true');
+        vlcEmbed.setAttribute('http-user-agent', 'VLC/Chrome Player');
+
         // Add to container
         if (containerRef.current) {
           containerRef.current.appendChild(vlcEmbed);
@@ -100,37 +237,62 @@ const VLCPlayer: React.FC<VLCPlayerProps> = ({ channel, onChannelEnd }) => {
 
         vlcRef.current = vlcEmbed;
 
-        // Set up VLC event listeners with timeout
+        // Enhanced VLC event listeners with Chrome-specific handling
         const setupTimeout = setTimeout(() => {
           try {
             if (vlcRef.current && vlcRef.current.playlist) {
               // Clear any existing playlist
               vlcRef.current.playlist.clear();
               
-              // Add the stream URL
-              vlcRef.current.playlist.add(channel.url, channel.name);
+              // Add the stream URL with Chrome-optimized options
+              const itemId = vlcRef.current.playlist.add(channel.url, channel.name, [
+                ':network-caching=1000',
+                ':live-caching=300',
+                ':http-reconnect',
+                ':http-continuous',
+                ':no-audio-visual',
+                ':intf=dummy'
+              ]);
               
               if (settings.autoplay) {
-                vlcRef.current.playlist.play();
+                vlcRef.current.playlist.playItem(itemId);
                 setIsPlaying(true);
               }
               
               setIsLoading(false);
 
-              // Monitor playback state
+              // Enhanced monitoring for Chrome
               const monitorInterval = setInterval(() => {
                 try {
                   if (vlcRef.current && vlcRef.current.input && vlcRef.current.playlist) {
                     const inputState = vlcRef.current.input.state;
                     const isCurrentlyPlaying = vlcRef.current.playlist.isPlaying;
                     
-                    setCurrentTime(vlcRef.current.input.time / 1000);
-                    setDuration(vlcRef.current.input.length / 1000);
+                    // Update time information
+                    if (vlcRef.current.input.time >= 0) {
+                      setCurrentTime(vlcRef.current.input.time / 1000);
+                    }
+                    if (vlcRef.current.input.length >= 0) {
+                      setDuration(vlcRef.current.input.length / 1000);
+                    }
+                    
                     setIsPlaying(isCurrentlyPlaying);
                     
-                    // Check for errors
-                    if (inputState === 6) { // VLC error state
-                      throw new Error('VLC playback error');
+                    // Enhanced error detection for Chrome
+                    if (inputState === 6 || inputState === 7) { // VLC error or end states
+                      throw new Error('VLC playback error or stream ended');
+                    }
+                    
+                    // Check for Chrome-specific issues
+                    if (inputState === 0 && !isCurrentlyPlaying && retryCount === 0) {
+                      // Stream might not be loading, try to restart
+                      console.warn('Stream not loading, attempting restart...');
+                      vlcRef.current.playlist.stop();
+                      setTimeout(() => {
+                        if (vlcRef.current && vlcRef.current.playlist) {
+                          vlcRef.current.playlist.play();
+                        }
+                      }, 1000);
                     }
                   }
                 } catch (e) {
@@ -141,20 +303,20 @@ const VLCPlayer: React.FC<VLCPlayerProps> = ({ channel, onChannelEnd }) => {
 
               return () => clearInterval(monitorInterval);
             } else {
-              throw new Error('VLC plugin not properly initialized');
+              throw new Error('VLC plugin not properly initialized - Chrome may have blocked the plugin');
             }
           } catch (e) {
             console.error('VLC setup error:', e);
-            setError('Failed to initialize VLC player - Stream may be incompatible');
+            setError('Failed to initialize VLC player - Chrome may require plugin permissions');
             setIsLoading(false);
           }
-        }, 2000); // Give VLC more time to initialize
+        }, 3000); // Increased timeout for Chrome
 
         return () => clearTimeout(setupTimeout);
 
       } catch (e) {
         console.error('VLC initialization error:', e);
-        setError('Failed to load VLC player');
+        setError('Failed to load VLC player in Chrome browser');
         setIsLoading(false);
       }
     };
@@ -201,7 +363,7 @@ const VLCPlayer: React.FC<VLCPlayerProps> = ({ channel, onChannelEnd }) => {
       }
     } catch (e) {
       console.error('VLC play/pause error:', e);
-      setError('Playback control failed');
+      setError('Playback control failed - Chrome may have restricted plugin access');
     }
   };
 
@@ -271,7 +433,7 @@ const VLCPlayer: React.FC<VLCPlayerProps> = ({ channel, onChannelEnd }) => {
         containerRef.current.innerHTML = '';
       }
       
-      // Trigger re-initialization by updating a dependency
+      // Trigger re-initialization with delay for Chrome
       setTimeout(() => {
         if (vlcRef.current && vlcRef.current.playlist) {
           try {
@@ -279,13 +441,13 @@ const VLCPlayer: React.FC<VLCPlayerProps> = ({ channel, onChannelEnd }) => {
             vlcRef.current.playlist.add(channel?.url, channel?.name);
             vlcRef.current.playlist.play();
           } catch (e) {
-            setError('Retry failed - Stream may be offline');
+            setError('Retry failed - Chrome may have blocked plugin access');
             setIsLoading(false);
           }
         }
-      }, 1000);
+      }, 2000);
     } else {
-      setError('Maximum retry attempts reached - Stream may be offline');
+      setError('Maximum retry attempts reached - Try enabling plugin permissions in Chrome');
     }
   };
 
@@ -302,6 +464,68 @@ const VLCPlayer: React.FC<VLCPlayerProps> = ({ channel, onChannelEnd }) => {
     return `${minutes}:${seconds.toString().padStart(2, '0')}`;
   };
 
+  const getBrowserSpecificInstructions = () => {
+    switch (browserInfo.name) {
+      case 'Chrome':
+        return {
+          title: 'Chrome VLC Plugin Setup',
+          icon: <Chrome className="w-8 h-8" />,
+          steps: [
+            'Download VLC Media Player from videolan.org',
+            'During installation, ensure "Web Plugin" is checked',
+            'Restart Chrome completely (close all windows)',
+            'Navigate to chrome://settings/content/flash',
+            'Add this site to "Allow" list if prompted',
+            'Refresh this page and allow plugin when prompted'
+          ],
+          note: 'Chrome versions 45+ require manual plugin permission. You may need to click the plugin icon in the address bar.',
+          downloadUrl: 'https://www.videolan.org/vlc/download-windows.html'
+        };
+      case 'Firefox':
+        return {
+          title: 'Firefox VLC Plugin Setup',
+          icon: <Globe className="w-8 h-8" />,
+          steps: [
+            'Download VLC Media Player from videolan.org',
+            'Install with "Mozilla plugin" option enabled',
+            'Restart Firefox completely',
+            'Go to about:addons → Plugins',
+            'Enable VLC Web Plugin',
+            'Refresh this page'
+          ],
+          note: 'Firefox 52+ dropped NPAPI support. Consider using Firefox ESR or alternative browsers.',
+          downloadUrl: 'https://www.videolan.org/vlc/download-windows.html'
+        };
+      case 'Edge':
+        return {
+          title: 'Edge Browser Notice',
+          icon: <Monitor className="w-8 h-8" />,
+          steps: [
+            'Microsoft Edge does not support VLC plugins',
+            'Use Chrome, Firefox, or Internet Explorer instead',
+            'Alternative: Use the Enhanced IPTV player',
+            'Switch to a different player from settings menu'
+          ],
+          note: 'Edge never supported NPAPI plugins. Please use an alternative browser or player.',
+          downloadUrl: 'https://www.google.com/chrome/'
+        };
+      default:
+        return {
+          title: 'VLC Plugin Installation',
+          icon: <Download className="w-8 h-8" />,
+          steps: [
+            'Download VLC Media Player from videolan.org',
+            'Enable "Web Plugin" during installation',
+            'Restart your browser completely',
+            'Allow plugin permissions when prompted',
+            'Refresh this page'
+          ],
+          note: 'Plugin support varies by browser. Chrome and Firefox work best.',
+          downloadUrl: 'https://www.videolan.org/vlc/'
+        };
+    }
+  };
+
   if (!channel) {
     return (
       <div className="aspect-video bg-gray-900 rounded-xl flex items-center justify-center">
@@ -315,19 +539,33 @@ const VLCPlayer: React.FC<VLCPlayerProps> = ({ channel, onChannelEnd }) => {
   }
 
   if (!vlcAvailable) {
+    const instructions = getBrowserSpecificInstructions();
+    
     return (
       <div className="aspect-video bg-gray-900 rounded-xl flex items-center justify-center">
-        <div className="text-center text-white max-w-md mx-auto p-6">
+        <div className="text-center text-white max-w-lg mx-auto p-6">
           <div className="w-16 h-16 bg-orange-500 rounded-full flex items-center justify-center mx-auto mb-4">
-            <Download className="w-8 h-8" />
+            {instructions.icon}
           </div>
-          <h3 className="text-xl font-semibold mb-3">VLC Plugin Required</h3>
+          <h3 className="text-xl font-semibold mb-3">{instructions.title}</h3>
+          
+          {/* Browser Info */}
+          <div className="bg-gray-800 rounded-lg p-3 mb-4 text-sm">
+            <p className="text-gray-300">
+              <strong>Detected:</strong> {browserInfo.name} {browserInfo.version}
+            </p>
+            <p className="text-gray-300">
+              <strong>Plugin Support:</strong> {browserInfo.supportsNPAPI ? 'Yes' : 'Limited/None'}
+            </p>
+          </div>
+          
           <p className="text-gray-300 mb-6">
-            VLC Player is the recommended engine for IPTV streams. Please install the VLC Web Plugin for the best experience.
+            VLC Player provides the best IPTV streaming experience with advanced codec support.
           </p>
+          
           <div className="space-y-4">
             <a
-              href="https://www.videolan.org/vlc/download-windows.html"
+              href={instructions.downloadUrl}
               target="_blank"
               rel="noopener noreferrer"
               className="inline-flex items-center space-x-2 bg-orange-600 hover:bg-orange-700 text-white px-6 py-3 rounded-lg transition-colors duration-200"
@@ -335,17 +573,23 @@ const VLCPlayer: React.FC<VLCPlayerProps> = ({ channel, onChannelEnd }) => {
               <Download className="w-5 h-5" />
               <span>Download VLC</span>
             </a>
-            <div className="text-sm text-gray-400 space-y-2">
+            
+            <div className="text-sm text-gray-400 space-y-3">
               <p className="font-medium">Installation Steps:</p>
-              <ol className="text-left space-y-1 list-decimal list-inside">
-                <li>Download and install VLC Media Player</li>
-                <li>Enable "Web Plugin" during installation</li>
-                <li>Restart your browser completely</li>
-                <li>Refresh this page</li>
+              <ol className="text-left space-y-2 list-decimal list-inside">
+                {instructions.steps.map((step, index) => (
+                  <li key={index}>{step}</li>
+                ))}
               </ol>
+              
               <div className="mt-4 p-3 bg-gray-800 rounded text-xs">
+                <p className="font-medium mb-1 text-yellow-400">Important:</p>
+                <p>{instructions.note}</p>
+              </div>
+              
+              <div className="mt-4 p-3 bg-blue-900 rounded text-xs">
                 <p className="font-medium mb-1">Alternative:</p>
-                <p>Use the "Enhanced IPTV" player from the settings menu for HLS.js support without VLC.</p>
+                <p>Use the "Enhanced IPTV" or "KSPlayer" from the settings menu for plugin-free streaming.</p>
               </div>
             </div>
           </div>
@@ -365,7 +609,9 @@ const VLCPlayer: React.FC<VLCPlayerProps> = ({ channel, onChannelEnd }) => {
           <div className="text-center text-white">
             <div className="animate-spin w-8 h-8 border-2 border-orange-500 border-t-transparent rounded-full mx-auto mb-4"></div>
             <p className="text-lg">Loading VLC Player...</p>
-            <p className="text-sm text-gray-400 mt-2">Initializing IPTV stream playback</p>
+            <p className="text-sm text-gray-400 mt-2">
+              Initializing IPTV stream in {browserInfo.name}
+            </p>
             {retryCount > 0 && (
               <p className="text-xs text-yellow-400 mt-2">Retry attempt {retryCount}/3</p>
             )}
@@ -395,13 +641,13 @@ const VLCPlayer: React.FC<VLCPlayerProps> = ({ channel, onChannelEnd }) => {
               )}
               
               <div className="text-sm text-gray-400 space-y-2">
-                <p className="font-medium">Troubleshooting:</p>
+                <p className="font-medium">Chrome Troubleshooting:</p>
                 <ul className="text-left space-y-1">
-                  <li>• Ensure VLC is properly installed with web plugin</li>
-                  <li>• Check if the stream URL is accessible</li>
-                  <li>• Try restarting your browser</li>
-                  <li>• Verify the stream is currently live</li>
-                  <li>• Use "Enhanced IPTV" player as alternative</li>
+                  <li>• Check if VLC plugin is enabled in Chrome settings</li>
+                  <li>• Look for plugin permission prompt in address bar</li>
+                  <li>• Try refreshing the page after allowing plugins</li>
+                  <li>• Ensure VLC is installed with web plugin enabled</li>
+                  <li>• Consider using Enhanced IPTV player as alternative</li>
                 </ul>
               </div>
             </div>
@@ -418,6 +664,7 @@ const VLCPlayer: React.FC<VLCPlayerProps> = ({ channel, onChannelEnd }) => {
             isPlaying ? 'bg-orange-500 animate-pulse' : 'bg-gray-500'
           }`}></div>
           <span>VLC</span>
+          <span className="text-gray-300">• {browserInfo.name}</span>
           {duration > 0 && <span className="text-gray-300">• {formatTime(duration)}</span>}
           {retryCount > 0 && <span className="text-yellow-400">• Retry {retryCount}</span>}
         </div>
@@ -495,7 +742,7 @@ const VLCPlayer: React.FC<VLCPlayerProps> = ({ channel, onChannelEnd }) => {
                   />
                 </div>
 
-                {/* Connection Status */}
+                {/* Enhanced Connection Status */}
                 <div className="flex items-center space-x-1 text-xs">
                   <div className={`w-3 h-3 rounded-full ${
                     error ? 'bg-red-500' :
@@ -509,6 +756,7 @@ const VLCPlayer: React.FC<VLCPlayerProps> = ({ channel, onChannelEnd }) => {
                   }>
                     {error ? 'Error' : isLoading ? 'Connecting' : isPlaying ? 'Live' : 'Stopped'}
                   </span>
+                  <span className="text-gray-400">• {browserInfo.name}</span>
                 </div>
               </div>
 
