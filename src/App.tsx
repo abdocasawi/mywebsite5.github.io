@@ -75,10 +75,10 @@ function App() {
         <div className="mt-16 grid grid-cols-1 md:grid-cols-3 gap-8">
           <div className="bg-gray-900 rounded-xl p-6 text-center">
             <div className="w-12 h-12 bg-purple-600 rounded-lg flex items-center justify-center mx-auto mb-4">
-              <span className="text-white font-bold">JW</span>
+              <span className="text-white font-bold">KS</span>
             </div>
-            <h3 className="text-lg font-semibold text-white mb-2">JW Player Pro</h3>
-            <p className="text-gray-400">Professional streaming engine with adaptive bitrate and advanced codec support</p>
+            <h3 className="text-lg font-semibold text-white mb-2">KSPlayer Engine</h3>
+            <p className="text-gray-400">Advanced streaming engine with adaptive bitrate and superior codec support</p>
           </div>
           
           <div className="bg-gray-900 rounded-xl p-6 text-center">

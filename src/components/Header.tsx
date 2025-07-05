@@ -13,9 +13,9 @@ export const Header: React.FC = () => {
             </div>
             <div className="flex items-center space-x-2">
               <h1 className="text-xl font-bold text-white">StreamHub</h1>
-              <div className="flex items-center space-x-1 bg-yellow-500 text-black px-2 py-1 rounded text-xs font-bold">
+              <div className="flex items-center space-x-1 bg-purple-500 text-white px-2 py-1 rounded text-xs font-bold">
                 <Star className="w-3 h-3" />
-                <span>PRO</span>
+                <span>KS</span>
               </div>
             </div>
           </div>
@@ -40,7 +40,7 @@ export const Header: React.FC = () => {
           <div className="flex items-center space-x-4">
             <div className="hidden sm:flex items-center space-x-2 text-xs text-gray-400">
               <span>Powered by</span>
-              <span className="text-yellow-400 font-semibold">JW Player</span>
+              <span className="text-purple-400 font-semibold">KSPlayer</span>
             </div>
             <button className="p-2 text-gray-400 hover:text-white transition-colors">
               <Settings className="w-5 h-5" />
