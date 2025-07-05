@@ -4,33 +4,93 @@
     <meta charset="UTF-8" />
     <link rel="icon" type="image/svg+xml" href="/vite.svg" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>StreamHub - Live TV Streaming</title>
-    <meta name="description" content="Stream live TV channels with KSPlayer. Professional IPTV streaming with adaptive bitrate." />
-    <meta name="keywords" content="live tv, streaming, iptv, ksplayer, hls, m3u8, video player" />
+    <title>StreamHub - Live TV Streaming with VLC</title>
+    <meta name="description" content="Stream live TV channels with VLC Player. Professional IPTV streaming with advanced codec support." />
+    <meta name="keywords" content="live tv, streaming, iptv, vlc player, hls, m3u8, video player, codec support" />
     
-    <!-- KSPlayer CSS (loaded dynamically) -->
+    <!-- VLC Web Plugin Detection -->
     <style>
-      .ksplayer {
+      /* VLC Player Styling */
+      embed[type="application/x-vlc-plugin"] {
         border-radius: 0.75rem !important;
         overflow: hidden !important;
+        background: #000000 !important;
       }
       
-      .ks-controls {
+      /* Custom VLC Controls Styling */
+      .vlc-controls {
         background: linear-gradient(transparent, rgba(0,0,0,0.7)) !important;
       }
       
-      .ks-button-color {
-        color: #8b5cf6 !important;
+      .vlc-button-color {
+        color: #f97316 !important;
       }
       
-      .ks-progress {
-        background-color: #8b5cf6 !important;
+      .vlc-progress {
+        background-color: #f97316 !important;
       }
       
-      .ks-slider-horizontal .ks-knob {
-        background-color: #8b5cf6 !important;
+      .vlc-slider-horizontal .vlc-knob {
+        background-color: #f97316 !important;
+      }
+
+      /* Fallback for browsers without VLC */
+      .vlc-fallback {
+        display: none;
+      }
+      
+      /* Show fallback if VLC is not available */
+      .no-vlc .vlc-fallback {
+        display: block;
       }
     </style>
+    
+    <!-- VLC Plugin Detection Script -->
+    <script>
+      // Detect VLC Plugin on page load
+      window.addEventListener('DOMContentLoaded', function() {
+        var hasVLC = false;
+        
+        try {
+          // Check for VLC plugin in various ways
+          hasVLC = !!(
+            navigator.plugins['VLC Web Plugin'] ||
+            navigator.plugins['VLC Multimedia Plugin'] ||
+            navigator.mimeTypes['application/x-vlc-plugin'] ||
+            window.VLCPlugin ||
+            // Check for ActiveX on IE/Edge
+            window.ActiveXObject
+          );
+          
+          // Additional check for VLC plugin
+          if (!hasVLC) {
+            try {
+              var testEmbed = document.createElement('embed');
+              testEmbed.setAttribute('type', 'application/x-vlc-plugin');
+              testEmbed.style.display = 'none';
+              document.body.appendChild(testEmbed);
+              
+              setTimeout(function() {
+                hasVLC = !!(testEmbed.playlist || testEmbed.audio || testEmbed.video);
+                document.body.removeChild(testEmbed);
+                
+                if (!hasVLC) {
+                  document.body.classList.add('no-vlc');
+                }
+              }, 100);
+            } catch (e) {
+              document.body.classList.add('no-vlc');
+            }
+          }
+        } catch (e) {
+          document.body.classList.add('no-vlc');
+        }
+        
+        if (!hasVLC) {
+          document.body.classList.add('no-vlc');
+        }
+      });
+    </script>
   </head>
   <body>
     <div id="root"></div>

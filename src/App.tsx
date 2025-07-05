@@ -33,7 +33,7 @@ function App() {
                       {selectedChannel.name}
                     </h2>
                     <div className="flex items-center space-x-4 text-sm text-gray-400 mb-4">
-                      <span className="bg-purple-600 text-white px-2 py-1 rounded">
+                      <span className="bg-orange-600 text-white px-2 py-1 rounded">
                         {selectedChannel.category}
                       </span>
                       <span>{selectedChannel.country}</span>
@@ -74,15 +74,15 @@ function App() {
         {/* Features Section */}
         <div className="mt-16 grid grid-cols-1 md:grid-cols-3 gap-8">
           <div className="bg-gray-900 rounded-xl p-6 text-center">
-            <div className="w-12 h-12 bg-purple-600 rounded-lg flex items-center justify-center mx-auto mb-4">
-              <span className="text-white font-bold">KS</span>
+            <div className="w-12 h-12 bg-orange-600 rounded-lg flex items-center justify-center mx-auto mb-4">
+              <span className="text-white font-bold">VLC</span>
             </div>
-            <h3 className="text-lg font-semibold text-white mb-2">KSPlayer Engine</h3>
-            <p className="text-gray-400">Advanced streaming engine with adaptive bitrate and superior codec support</p>
+            <h3 className="text-lg font-semibold text-white mb-2">VLC Player Engine</h3>
+            <p className="text-gray-400">Advanced codec support and superior IPTV streaming with VLC Web Plugin</p>
           </div>
           
           <div className="bg-gray-900 rounded-xl p-6 text-center">
-            <div className="w-12 h-12 bg-purple-600 rounded-lg flex items-center justify-center mx-auto mb-4">
+            <div className="w-12 h-12 bg-orange-600 rounded-lg flex items-center justify-center mx-auto mb-4">
               <span className="text-white font-bold">ALL</span>
             </div>
             <h3 className="text-lg font-semibold text-white mb-2">All Formats</h3>
@@ -90,11 +90,11 @@ function App() {
           </div>
           
           <div className="bg-gray-900 rounded-xl p-6 text-center">
-            <div className="w-12 h-12 bg-purple-600 rounded-lg flex items-center justify-center mx-auto mb-4">
+            <div className="w-12 h-12 bg-orange-600 rounded-lg flex items-center justify-center mx-auto mb-4">
               <span className="text-white font-bold">∞</span>
             </div>
             <h3 className="text-lg font-semibold text-white mb-2">Enterprise Grade</h3>
-            <p className="text-gray-400">Professional-grade streaming with advanced analytics and error handling</p>
+            <p className="text-gray-400">Professional-grade streaming with VLC's proven codec support and reliability</p>
           </div>
         </div>
       </main>
